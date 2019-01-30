@@ -34,8 +34,8 @@ O ::== + | -
     </p>
     <!-- Client-side code down here, per the YSlow advice. 
     // (http://developer.yahoo.com/performance/rules.html#js_bottom) -->
-    <script type="text/javascript" src="scripts/utils.js"></script>	
-    <script type="text/javascript" src="scripts/lexer.js"></script>	
+    <script type="text/javascript" src="scripts/utils.js"></script> 
+    <script type="text/javascript" src="scripts/lexer.js"></script> 
     <script type="text/javascript">
     // Global variables
     var tokens = "";
@@ -77,7 +77,8 @@ O ::== + | -
         // Grab the next token.
         currentToken = getNextToken();
         // A valid parse derives the G(oal) production, so begin there.
-        parseG();
+        parseProgram();
+       // checkToken("boolval");
         // Report the results.
         putMessage("Parsing found " + errorCount + " error(s).");        
     }
@@ -90,11 +91,12 @@ O ::== + | -
     function parseE() {
         // All E productions begin with a digit, so make sure that we have one.
         checkToken("digit");
+
         // Look ahead 1 char (which is now in currentToken because checkToken 
         // consumes another one) and see which E production to follow.
         if (currentToken != EOF) {
             // We're not done, we we expect to have an op.
-            checkToken("op");
+            checkToken("intop");
             parseE();
         } else {
             // There is nothing else in the token stream, 
@@ -103,9 +105,50 @@ O ::== + | -
         }
     }
 
+    function parseProgram(){
+    
+        checkToken("boolval");
+        
+    if (currentToken != EOF) {
+            // We're not done, we we expect to have an op.
+            checkToken("intop");
+            //parseE();
+        } else {
+            // There is nothing else in the token stream, 
+            // and that's cool since E --> digit is valid.
+            putMessage("EOF reached");
+        }
+
+        //checkToken()
+    }
+   /* function parseBlock(){}
+    function parseStatementList(){}
+    function parseStatement(){}
+    function parsePrintStatement(){}
+    function parseAssignmentStatement(){
+    }
+    function parseVarDecl(){}
+    function parseWhileStatement(){}
+    function parseIfStatement(){}
+    function parseExpr(){}
+
+    function parseChar(){}
+*/
+
     function checkToken(expectedKind) {
         // Validate that we have the expected token kind and et the next token.
         switch(expectedKind) {
+
+            case "char":   putMessage("Expecting char. Current token is :" + currentToken );
+                            var patt = new RegExp ("[a-z]");
+                            if(patt.test(currentToken))
+                                putMessage("Got char!");
+                            else
+                            {
+                                errorCount++;
+                                putMessage("NOT CHAR");
+                            }
+                            break;
             case "digit":   putMessage("Expecting a digit");
                             if (currentToken=="0" || currentToken=="1" || currentToken=="2" || 
                                 currentToken=="3" || currentToken=="4" || currentToken=="5" || 
@@ -120,8 +163,39 @@ O ::== + | -
                                 putMessage("NOT a digit.  Error at position " + tokenIndex + ".");
                             }
                             break;
-            case "op":      putMessage("Expecting an operator");
-                            if (currentToken=="+" || currentToken=="-")
+
+
+            case "boolval" : putMessage("Expecting boolval");
+
+                                putMessage("TokenIndex:" + tokens.charAt(tokenIndex-1) + " TokenIndex afterwards:" + tokens.charAt(tokenIndex+3));
+                                //checks if match true
+                             if(tokens.charAt(tokenIndex-1) == 't' 
+                                && tokens.charAt(tokenIndex) == 'r' 
+                                && tokens.charAt(tokenIndex+1) == 'u' 
+                                && tokens.charAt(tokenIndex+2) == 'e'){
+                                putMessage("Got Boolval!!!(true)");
+                                tokenIndex = tokenIndex+3;
+                        }
+                                //checks if match false
+                             else if(tokens.charAt(tokenIndex-1) == 'f' 
+                                && tokens.charAt(tokenIndex) == 'a' 
+                                && tokens.charAt(tokenIndex+1) == 'l' 
+                                && tokens.charAt(tokenIndex+2) == 's' 
+                                && tokens.charAt(tokenIndex+3) == 'e')
+                             {
+                                tokenIndex =tokenIndex+4;
+                                putMessage("WE GOT A FALSE MATCH");
+                             }
+
+                            else
+                            {
+                                errorCount++;
+                                putMessage("Not a boolval");
+                            }
+                            break;
+
+            case "intop":      putMessage("Expecting an operator");
+                            if (currentToken=="+")
                             {
                                 putMessage("Got an operator!");
                             }
@@ -131,8 +205,10 @@ O ::== + | -
                                 putMessage("NOT an operator.  Error at position " + tokenIndex + ".");
                             }
                             break;
+
+
             default:        putMessage("Parse Error: Invalid Token Type at position " + tokenIndex + ".");
-                            break;			
+                            break;          
         }
         // Consume another token, having just checked this one, because that 
         // will allow the code to see what's coming next... a sort of "look-ahead".
