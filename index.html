@@ -1,7 +1,26 @@
 <!DOCTYPE HTML>
+
+<!--
+
+*Gotta move everything once i have something working and then i can cry about it not working AGAIN when moving everything to respective files
+
+*Also this site looks ugly as heck
+
+*I want this to be themed. Maybe after the promised neverland
+
+*I was supposed to write something useful here cant remember
+
+*Get rid of the terrible switch case
+
+*I leave this in the hand of future me.
+
+
+-->
 <html>
 <head>
     <title>My Compiler</title>
+    <img src = "https://66.media.tumblr.com/2f7d663b71e7c4df7e7e63fd5c2f551f/tumblr_inline_oyionunr9Z1sib3y3_500.png"/>
+    <h2>^^Me trusting my project (and degree) to future me</h2>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
     <link rel="stylesheet" type="text/css" href="compiler.css" />
 </head>
@@ -11,10 +30,6 @@
         . . . <em>a simple parser for a simple grammar</em>:
     </p>
     <pre>
-G ::== E
-E ::== D O E | D
-D ::== 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 0
-O ::== + | -
     </pre>
     <div>
         <img style="float:right;" src="images/CompilerPhases.png" alt="Compiler Phases diagram" />
@@ -38,17 +53,37 @@ O ::== + | -
     <script type="text/javascript" src="scripts/lexer.js"></script> 
     <script type="text/javascript">
     // Global variables
-    var tokens = "";
+    var tokens = [];
     var tokenIndex = 0;
     var currentToken = "";
     var errorCount = 0;
     var EOF = "$";
+        
+    var regBooleanFalse = new RegExp('false');
+    var regBooleanTrue = new RegExp('true');
+    var regWhile = new RegExp('while');;
+    var refIf = new RegExp('if');
+    
+    var regID = new RegExp("[a-z]")
+    var regDigit = new RegExp("[0-9]")
+    var regIntOp = new RegExp("+");
+    var regAssign = new RegExp(' = ');
+    var regSpace = new RegExp('\n | \t ');
+    var regIsNotEqual = new RegExp('!=');
+    var regIsEqual = new RegExp("==");
+    var regBoolType = new RegExp('boolean')
+    var regIntType = new RegExp ('int');
+    var regStringType = new RegExp('string');
+    var code;
+    var codeBody = document.getElementById("taOutput");
+        
+     
 
     function init() {
         // Clear the message box.
         document.getElementById("taOutput").value = "";
         // Set the initial values for our globals.
-        tokens = "";
+        tokens = [];
         tokenIndex = 0;
         currentToken = ' ';
         errorCount = 0;        
@@ -59,12 +94,19 @@ O ::== + | -
         // "compile" button between the two text areas, above.  
         // Note the <input> element's event handler: onclick="btnCompile_click();
         init();
+     var codeBody = document.getElementById("taSourceCode").value;
+        
+     var code= trim(codeBody);
+        putMessage(code.charAt(0));
+        putMessage("I DID SOMWTHING OK " + code);
         putMessage("Compilation Started");
         // Grab the tokens from the lexer . . .
         tokens = lex();
         putMessage("Lex returned [" + tokens + "]");
         // . . . and parse!
         parse();
+        
+        
     }
     
     function putMessage(msg) {
@@ -80,65 +122,22 @@ O ::== + | -
         parseProgram();
        // checkToken("boolval");
         // Report the results.
-        putMessage("Parsing found " + errorCount + " error(s).");        
-    }
-    
-    function parseG() {
-        // A G(oal) production can only be an E(xpression), so parse the E production.
-        parseE();
-    }
-
-    function parseE() {
-        // All E productions begin with a digit, so make sure that we have one.
-        checkToken("digit");
-
-        // Look ahead 1 char (which is now in currentToken because checkToken 
-        // consumes another one) and see which E production to follow.
-        if (currentToken != EOF) {
-            // We're not done, we we expect to have an op.
-            checkToken("intop");
-            parseE();
-        } else {
-            // There is nothing else in the token stream, 
-            // and that's cool since E --> digit is valid.
-            putMessage("EOF reached");
-        }
-    }
-
-    function parseProgram(){
-    
-        checkToken("boolval");
+        putMessage("Parsing found " + errorCount + " error(s).");   
+       
+       
         
-    if (currentToken != EOF) {
-            // We're not done, we we expect to have an op.
-            checkToken("intop");
-            //parseE();
-        } else {
-            // There is nothing else in the token stream, 
-            // and that's cool since E --> digit is valid.
-            putMessage("EOF reached");
+        if(code.charAt(0) === 'a'){
+            tokens.push(code.charAt(0));
+            putMessage("HELLO HI");
         }
-
-        //checkToken()
     }
-   /* function parseBlock(){}
-    function parseStatementList(){}
-    function parseStatement(){}
-    function parsePrintStatement(){}
-    function parseAssignmentStatement(){
-    }
-    function parseVarDecl(){}
-    function parseWhileStatement(){}
-    function parseIfStatement(){}
-    function parseExpr(){}
-
-    function parseChar(){}
-*/
 
     function checkToken(expectedKind) {
         // Validate that we have the expected token kind and et the next token.
         switch(expectedKind) {
-
+            case "type":   putMessage("Expecting Type");
+                           if(currentToken == "i" && tokens.charAt(tokenIndex) == 'n' && tokens.charAt(tokenIndex+1) == 't')
+                               putMessage("Got type");
             case "char":   putMessage("Expecting char. Current token is :" + currentToken );
                             var patt = new RegExp ("[a-z]");
                             if(patt.test(currentToken))
@@ -150,6 +149,9 @@ O ::== + | -
                             }
                             break;
             case "digit":   putMessage("Expecting a digit");
+                            
+                var res = regIsEqual("2 ==2")
+                            putMessage(res +" WHER EU AT");
                             if (currentToken=="0" || currentToken=="1" || currentToken=="2" || 
                                 currentToken=="3" || currentToken=="4" || currentToken=="5" || 
                                 currentToken=="6" || currentToken=="7" || currentToken=="8" || 
@@ -227,5 +229,6 @@ O ::== + | -
         return thisToken;
     }
     </script>
+    <script type="text/javascript" src="utils.js"></script>
 </body>
 </html>
