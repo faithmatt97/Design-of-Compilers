@@ -12,7 +12,7 @@
 
 *Get rid of the terrible switch case
 
-*I leave this in the hand of future me.
+*I leave this in the hands of future me.
 
 
 -->
@@ -51,6 +51,7 @@
     // (http://developer.yahoo.com/performance/rules.html#js_bottom) -->
     <script type="text/javascript" src="scripts/utils.js"></script> 
     <script type="text/javascript" src="scripts/lexer.js"></script> 
+     <script type="text/javascript" src="scripts/Token.js"></script> 
     <script type="text/javascript">
     // Global variables
     var tokens = [];
@@ -62,13 +63,14 @@
     var regBooleanFalse = new RegExp('false');
     var regBooleanTrue = new RegExp('true');
     var regWhile = new RegExp('while');;
-    var refIf = new RegExp('if');
+    var regIf = new RegExp('if');
     
     var regID = new RegExp("[a-z]")
     var regDigit = new RegExp("[0-9]")
-    var regIntOp = new RegExp("+");
+    var regIntOp = new RegExp("\\+");
     var regAssign = new RegExp(' = ');
-    var regSpace = new RegExp('\n | \t ');
+    //var regSpace = new RegExp('\n | \t ');
+    var regNewLine = new RegExp('\n');
     var regIsNotEqual = new RegExp('!=');
     var regIsEqual = new RegExp("==");
     var regBoolType = new RegExp('boolean')
@@ -78,15 +80,17 @@
     var codeBody = document.getElementById("taOutput");
         
      
-
+        var tokenArray;
     function init() {
         // Clear the message box.
         document.getElementById("taOutput").value = "";
         // Set the initial values for our globals.
-        tokens = [];
+        tokenArray= []; //kept getting some type error when it was named tokens
         tokenIndex = 0;
+        lexPtr =0;
         currentToken = ' ';
-        errorCount = 0;        
+        errorCount = 0; 
+        end = 1;       
     }
     
     function btnCompile_click() {        
@@ -96,9 +100,8 @@
         init();
      var codeBody = document.getElementById("taSourceCode").value;
         
-     var code= trim(codeBody);
-        putMessage(code.charAt(0));
-        putMessage("I DID SOMWTHING OK " + code);
+      code= trim(codeBody);
+                
         putMessage("Compilation Started");
         // Grab the tokens from the lexer . . .
         tokens = lex();
@@ -119,19 +122,76 @@
         // Grab the next token.
         currentToken = getNextToken();
         // A valid parse derives the G(oal) production, so begin there.
-        parseProgram();
+       
        // checkToken("boolval");
         // Report the results.
         putMessage("Parsing found " + errorCount + " error(s).");   
        
        
         
-        if(code.charAt(0) === 'a'){
-            tokens.push(code.charAt(0));
-            putMessage("HELLO HI");
+        tokenPtr = 0;
+
+        while(lexPtr < code.length){
+         
+                    //Just focusing on chugging out tokens in console, will worry about lines, columns, and structural logic later
+
+
+                    // TRUE TEST for now we just let the lexPtr skip ahead for tokens with lengths > 1. I'm sure there's a better way to do this but I wanna play some resident evil so LATER. 
+                    if(regBooleanTrue.test(code.substring(lexPtr, lexPtr+4 ))){
+                        addToken("TOKEN_BOOLTRUE", code.substring(lexPtr, lexPtr+4), 0, 0);
+                        lexPtr+=3;
+                        console.log("AYYYYY TRUE")
+                    }
+
+                    // IF TEST
+                    else if(regIf.test(code.substring(lexPtr, lexPtr+2))){
+                        addToken("TOKEN_IF", code.substring(lexPtr, lexPtr+2), 0, 0);
+                        lexPtr++;
+                        console.log("If statement")
+                    }
+
+                    //WHILE TEST
+                    else if(regWhile.test(code.substring(lexPtr, lexPtr+5))){
+                        addToken("TOKEN_WHILE", code.substring(lexPtr, lexPtr+5), 0, 0);
+                        lexPtr+=4;
+                        console.log("While loop")
+                    }
+
+                    //FALSE TEST
+                    else if(regBooleanFalse.test(code.substring(lexPtr, lexPtr+5 ))){
+                        addToken("TOKEN_BOOLFALSE", code.substring(lexPtr, lexPtr+5), 0, 0);
+                        lexPtr+=4;
+                        console.log("FALSE LMFAO")
+                    }
+                    // ID TEST
+                    else if (regID.test(code.charAt(lexPtr))) {
+                        //var token = new Token("ID", code.charAt(lexPtr), 0, 0);
+                        addToken("TOKEN_ID", code.charAt(lexPtr), 0, 0);
+                        //console.log(tokenArray[0]);
+                            }
+                    //DIGIT TEST
+                    else if (regDigit.test(code.charAt(lexPtr))) {
+                        //var token = new Token("ID", code.charAt(lexPtr), 0, 0);
+                        addToken("TOKEN_DIGIT", code.charAt(lexPtr), 0, 0);
+                        //console.log(tokenArray[0]);
+                            }
+
+                            //NEWLINE TEST. I don't need a token for this but it's there for testing purposes. Will increment some pointer here to keep track of lines while Coloumn pointer will reset to zero 
+                    else if (regNewLine.test(code.charAt(lexPtr))) {
+                        //var token = new Token("ID", code.charAt(lexPtr), 0, 0);
+                        addToken("TOKEN_NEWLINE", code.charAt(lexPtr), 0, 0);  
+                        //console.log(tokenArray[0]);
+                            }
+                   
+           console.log("DONKEY KONG");
+           console.log(tokenArray[tokenPtr]);
+            lexPtr++;
+            tokenPtr++;
         }
+
     }
 
+         //everything below here will be deleted but will keep for now to reference later if i need it lmao.
     function checkToken(expectedKind) {
         // Validate that we have the expected token kind and et the next token.
         switch(expectedKind) {

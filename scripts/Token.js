@@ -2,7 +2,7 @@
 
 function addToken(type, value, line, colNumber){
  var newToken = new Token(type, value, line, colNumber);
- tokens.push(newToken);
+ tokenArray.push(newToken);
 }
 
 function Token(token, value, line, colNumber) {
@@ -10,4 +10,13 @@ function Token(token, value, line, colNumber) {
 	this.value = value;
 	this.line = line;
     this.colNumber = colNumber;
+}
+
+
+
+const tokenTypes = {
+    LEFTBRACE: 'LEFTBRACE',
+    RIGHTBRACE: 'RIGHTBRACE',
+    ID: 'ID',
+    CHAR: 'CHAR'
 }
