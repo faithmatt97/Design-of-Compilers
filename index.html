@@ -65,6 +65,8 @@
     var regWhile = new RegExp('while');;
     var regIf = new RegExp('if');
     
+    var regWhiteSpace = new RegExp(' |\t|\r');
+    var regPrint = new RegExp('print');
     var regID = new RegExp("[a-z]")
     var regDigit = new RegExp("[0-9]")
     var regIntOp = new RegExp("\\+");
@@ -81,6 +83,10 @@
         
      
         var tokenArray;
+
+        var line ;
+        var column ;
+        
     function init() {
         // Clear the message box.
         document.getElementById("taOutput").value = "";
@@ -91,6 +97,10 @@
         currentToken = ' ';
         errorCount = 0; 
         end = 1;       
+
+
+         line =1;
+         column = 0;
     }
     
     function btnCompile_click() {        
@@ -134,61 +144,89 @@
         while(lexPtr < code.length){
          
                     //Just focusing on chugging out tokens in console, will worry about lines, columns, and structural logic later
+                    // Hey Code, buddy, pal, you wanna work some time?
+                        if(regWhiteSpace.test(code.charAt(lexPtr))){
+                        //addToken("TOKEN_BOOLTRUE", code.charAt(lexPtr), 0, 0);
+                        //lexPtr++;
 
+                        console.log("White space detected");
+                        
+                        }
+
+                   
 
                     // TRUE TEST for now we just let the lexPtr skip ahead for tokens with lengths > 1. I'm sure there's a better way to do this but I wanna play some resident evil so LATER. 
-                    if(regBooleanTrue.test(code.substring(lexPtr, lexPtr+4 ))){
-                        addToken("TOKEN_BOOLTRUE", code.substring(lexPtr, lexPtr+4), 0, 0);
+
+                     else if(regBooleanTrue.test(code.substring(lexPtr, lexPtr+4 ))){
+                        addToken("TOKEN_BOOLTRUE", code.substring(lexPtr, lexPtr+4), line, column);
                         lexPtr+=3;
-                        console.log("AYYYYY TRUE")
+                        column+=3;
+                        
                     }
 
-                    // IF TEST
-                    else if(regIf.test(code.substring(lexPtr, lexPtr+2))){
-                        addToken("TOKEN_IF", code.substring(lexPtr, lexPtr+2), 0, 0);
+                            // IF TEST
+                    else if(regIf.test(code.substring(lexPtr, lexPtr+2)))
+                    {
+                        addToken("TOKEN_IF", code.substring(lexPtr, lexPtr+2), line, column);
                         lexPtr++;
-                        console.log("If statement")
+                        column++;
                     }
-
-                    //WHILE TEST
-                    else if(regWhile.test(code.substring(lexPtr, lexPtr+5))){
-                        addToken("TOKEN_WHILE", code.substring(lexPtr, lexPtr+5), 0, 0);
+                            //WHILE TEST
+                    else if(regWhile.test(code.substring(lexPtr, lexPtr+5)))
+                    {
+                        addToken("TOKEN_WHILE", code.substring(lexPtr, lexPtr+5), line, column);
                         lexPtr+=4;
-                        console.log("While loop")
+                        column+=4;
                     }
 
-                    //FALSE TEST
+                    else if(regPrint.test(code.substring(lexPtr, lexPtr+5)))
+                    {
+                        addToken("TOKEN_PRINT", code.substring(lexPtr, lexPtr+5), line, column);
+                        lexPtr+=3;
+                        column+=3;
+                    }
+
+                         //FALSE TEST
                     else if(regBooleanFalse.test(code.substring(lexPtr, lexPtr+5 ))){
-                        addToken("TOKEN_BOOLFALSE", code.substring(lexPtr, lexPtr+5), 0, 0);
+                        addToken("TOKEN_BOOLFALSE", code.substring(lexPtr, lexPtr+5), line, column);
                         lexPtr+=4;
-                        console.log("FALSE LMFAO")
+                        column+=4;
                     }
-                    // ID TEST
-                    else if (regID.test(code.charAt(lexPtr))) {
-                        //var token = new Token("ID", code.charAt(lexPtr), 0, 0);
-                        addToken("TOKEN_ID", code.charAt(lexPtr), 0, 0);
-                        //console.log(tokenArray[0]);
-                            }
-                    //DIGIT TEST
-                    else if (regDigit.test(code.charAt(lexPtr))) {
-                        //var token = new Token("ID", code.charAt(lexPtr), 0, 0);
-                        addToken("TOKEN_DIGIT", code.charAt(lexPtr), 0, 0);
-                        //console.log(tokenArray[0]);
-                            }
+                        // ID TEST
+                    else if (regID.test(code.charAt(lexPtr))) 
+                    {
+                        addToken("TOKEN_ID", code.charAt(lexPtr), line, column);
+                    }
+                        //DIGIT TEST
+                    else if (regDigit.test(code.charAt(lexPtr))) 
+                    {
+                        addToken("TOKEN_DIGIT", code.charAt(lexPtr), line, column);
+                    }
 
                             //NEWLINE TEST. I don't need a token for this but it's there for testing purposes. Will increment some pointer here to keep track of lines while Coloumn pointer will reset to zero 
                     else if (regNewLine.test(code.charAt(lexPtr))) {
-                        //var token = new Token("ID", code.charAt(lexPtr), 0, 0);
-                        addToken("TOKEN_NEWLINE", code.charAt(lexPtr), 0, 0);  
-                        //console.log(tokenArray[0]);
+                        
+                        addToken("TOKEN_NEWLINE", code.charAt(lexPtr), line, column);  
+                                line++
+                                column = -1;
                             }
-                   
-           console.log("DONKEY KONG");
-           console.log(tokenArray[tokenPtr]);
+                   else{
+
+                    console.log("Unexpected token at blah blah blah")
+                   }
+          
+           //console.log(tokenArray[tokenPtr]);
             lexPtr++;
+            column++;
+           // tokenPtr++;
+        
+            }
+
+            for( i=0; i < tokenArray.length; i++){
+                console.log(tokenArray[tokenPtr])
+            
             tokenPtr++;
         }
-
     }
 
          //everything below here will be deleted but will keep for now to reference later if i need it lmao.
