@@ -60,6 +60,17 @@
     var errorCount = 0;
     var EOF = "$";
         
+
+    var regStartComment = new RegExp('/\\*');
+    var regEndComment = new RegExp('\\*/');
+    var regEOF = new RegExp("\\$");
+
+    var regLeftBrace = new RegExp('{');
+    var regLeftParen = new RegExp("\\(");
+    var regRightParen = new RegExp("\\)");
+    var regRightBrace = new RegExp("}");
+
+
     var regBooleanFalse = new RegExp('false');
     var regBooleanTrue = new RegExp('true');
     var regWhile = new RegExp('while');;
@@ -80,8 +91,12 @@
     var regStringType = new RegExp('string');
     var code;
     var codeBody = document.getElementById("taOutput");
-        
-     
+
+    var regQuote = new RegExp('"');
+
+
+    var inQuotes = false;
+    var inComment = false; 
         var tokenArray;
 
         var line ;
@@ -89,6 +104,7 @@
         
     function init() {
         // Clear the message box.
+        console.clear();
         document.getElementById("taOutput").value = "";
         // Set the initial values for our globals.
         tokenArray= []; //kept getting some type error when it was named tokens
@@ -142,21 +158,79 @@
         tokenPtr = 0;
 
         while(lexPtr < code.length){
+
+                        if(inComment){
+                            //console.log("Still in Comment " + line +" " + column);
+
+                             if(regEndComment.test(code.substring(lexPtr, lexPtr+2))){
+                           inComment = false;
+                           lexPtr++;
+                           //console.log("End of Comment")
+
+                        }
+
+                        }
+                        else if(regStartComment.test(code.substring(lexPtr, lexPtr+2))){
+                           inComment = true;
+                           lexPtr++;
+                           //console.log("Start of Comment")
+
+                        }
+
+                        else if(regEndComment.test(code.substring(lexPtr, lexPtr+2))){
+                           inComment = false;
+                           console.log("End of Comment")
+
+                        }
          
                     //Just focusing on chugging out tokens in console, will worry about lines, columns, and structural logic later
                     // Hey Code, buddy, pal, you wanna work some time?
-                        if(regWhiteSpace.test(code.charAt(lexPtr))){
+                        else if(regWhiteSpace.test(code.charAt(lexPtr))){
                         //addToken("TOKEN_BOOLTRUE", code.charAt(lexPtr), 0, 0);
                         //lexPtr++;
+
+
 
                         console.log("White space detected");
                         
                         }
 
+                        else if(regLeftBrace.test(code.charAt(lexPtr))){
+                            addToken("TOKEN_LEFTBRACE", "{", line, column);
+                        }
+
+                        else if(regLeftParen.test(code.charAt(lexPtr))){
+                            addToken("TOKEN_LEFTPAREN", "(", line, column);
+                        }
+
+                        else if(regRightBrace.test(code.charAt(lexPtr))){
+                            addToken("TOKEN_RIGHTBRACE", "}", line, column);
+                        }
+
+                        else if(regRightParen.test(code.charAt(lexPtr))){
+                            addToken("TOKEN_RIGHTPAREN", ")", line, column);
+                        }
+
+                         else if(regEOF.test(code.charAt(lexPtr))){
+                           console.log("Finished lexing this program");
+                        }
                    
 
                     // TRUE TEST for now we just let the lexPtr skip ahead for tokens with lengths > 1. I'm sure there's a better way to do this but I wanna play some resident evil so LATER. 
-
+                    else if(regQuote.test(code.charAt(lexPtr)))
+                    {      
+                        addToken("TOKEN_QUOTE", '"', line, column);
+                        console.log("QUOTE");
+                        if(inQuotes){
+                                inQuotes = false;
+                                console.log("Closing Quote");
+                            }
+                        else {
+                            inQuotes = true;
+                            console.log("Opening Quote");
+                        }
+                        
+                    }
                      else if(regBooleanTrue.test(code.substring(lexPtr, lexPtr+4 ))){
                         addToken("TOKEN_BOOLTRUE", code.substring(lexPtr, lexPtr+4), line, column);
                         lexPtr+=3;
@@ -195,7 +269,14 @@
                         // ID TEST
                     else if (regID.test(code.charAt(lexPtr))) 
                     {
-                        addToken("TOKEN_ID", code.charAt(lexPtr), line, column);
+                        if(inQuotes)
+                        {
+                            addToken("TOKEN_CHAR", code.charAt(lexPtr), line, column);
+                        }
+                        else
+                        {
+                            addToken("TOKEN_ID", code.charAt(lexPtr), line, column);
+                        }
                     }
                         //DIGIT TEST
                     else if (regDigit.test(code.charAt(lexPtr))) 
@@ -206,13 +287,13 @@
                             //NEWLINE TEST. I don't need a token for this but it's there for testing purposes. Will increment some pointer here to keep track of lines while Coloumn pointer will reset to zero 
                     else if (regNewLine.test(code.charAt(lexPtr))) {
                         
-                        addToken("TOKEN_NEWLINE", code.charAt(lexPtr), line, column);  
+                       // addToken("TOKEN_NEWLINE", code.charAt(lexPtr), line, column);  
                                 line++
                                 column = -1;
                             }
                    else{
 
-                    console.log("Unexpected token at blah blah blah")
+                    console.log("Unexpected token at blah blah blah" + code.charAt(lexPtr));
                    }
           
            //console.log(tokenArray[tokenPtr]);
