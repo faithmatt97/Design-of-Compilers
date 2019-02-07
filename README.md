@@ -1,4 +1,6 @@
 # Design-of-Compilers
-I change my mind
 
-Language: JS
+--Build Instructions--
+
+Open Index.html
+Inspect page and open console to see outputs
