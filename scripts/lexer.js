@@ -71,9 +71,12 @@
         errorCount = 0; 
         warningCount = 0;    
 
-
+		
          line =1;
          column = 0;
+		 
+		 inQuotes = false;
+		 inComment = false;
     }
     
     function btnCompile_click() {        
@@ -117,6 +120,9 @@
         var commentLine
         var commentCol
         var programCount = 0;
+		
+		var quoteLine;
+		var quoteColumn;
         	console.log("LEXING PROGRAM #" + programCount);
         while(lexPtr < code.length){
         					//First test to see if we are in a comment. If we are, check to see if there's an END COMMENT token > set incomment flag to false so we can stop ignoring stuff.
@@ -132,7 +138,7 @@
 
                        else if(errorInCurrentProgram){
 
-
+							//inQuotes = false;
 
                         	console.log("LEXING stopped due to error. Warnings:" + warningCount +" errors:" + errors);
                         	if(regEOF.test(code.charAt(lexPtr)) ){
@@ -192,14 +198,7 @@
                             	tokenArray[tokenArray.length-1].colNumber);
                         }
                         	//Check for EOF token
-                         else if(regEOF.test(code.charAt(lexPtr))){
-                           console.log("Finished lexing program #" + programCount + " Warnings:" +warningCount + " Errors:" +errors);
-                           programCount++;
-
-                           if(lexPtr < code.length-1){
-                           	console.log("LEXING PROGRAM #" + programCount);
-                           }
-                        }
+                         
                    
 
                     		//Check for QUOTE token > anything recognized as ID will be registered as CHAR token 
@@ -210,7 +209,8 @@
                             	tokenArray[tokenArray.length-1].value +  " ] line:" + 
                             	tokenArray[tokenArray.length-1].line + " column:" +
                             	tokenArray[tokenArray.length-1].colNumber);
-
+							quoteLine = line;
+							quoteColumn = column;
                         	if(inQuotes)
                             	inQuotes = false;
                         	else 
@@ -309,7 +309,36 @@
 
 							
 						}
-
+						else if(inQuotes)
+						{
+							if(regID.test(code.charAt(lexPtr)))
+							{
+								addToken("TOKEN_CHAR", code.charAt(lexPtr), line, column);
+                            	console.log("LEXER -->"+tokenArray[tokenArray.length-1].type + " [ "+ 
+                            	tokenArray[tokenArray.length-1].value +  " ] line:" + 
+                            	tokenArray[tokenArray.length-1].line + " column:" +
+                            	tokenArray[tokenArray.length-1].colNumber);
+							}
+							else if(regQuote.test(code.charAt(lexPtr)))
+							{
+								addToken("TOKEN_QUOTE", '"', line, column);
+								console.log("LEXER -->"+tokenArray[tokenArray.length-1].type + " [ "+ 
+                            	tokenArray[tokenArray.length-1].value +  " ] line:" + 
+                            	tokenArray[tokenArray.length-1].line + " column:" +
+                            	tokenArray[tokenArray.length-1].colNumber);
+								
+								inQuotes = false;
+							}
+								
+							else {
+								console.log("ERROR: " +code.charAt(lexPtr) + " is not a char on line: " + line + " column:" + column );
+								errors++;
+								if(!errorInCurrentProgram){
+									errorInCurrentProgram = true;
+								}
+							}
+							
+						}
                         // Check for ID tokens
                     	else if (regID.test(code.charAt(lexPtr))) 
                     	{
@@ -378,6 +407,15 @@
                             	tokenArray[tokenArray.length-1].line + " column:" +
                             	tokenArray[tokenArray.length-1].colNumber);
 						}
+						
+						else if(regEOF.test(code.charAt(lexPtr))){
+                           console.log("Finished lexing program #" + programCount + " Warnings:" +warningCount + " Errors:" +errors);
+                           programCount++;
+
+                           if(lexPtr < code.length-1){
+                           	console.log("LEXING PROGRAM #" + programCount);
+                           }
+                        }
 
 
                             //NEWLINE TEST. I don't need a token for this but it's there for testing purposes. Will increment some pointer here to keep track of lines while Coloumn pointer will reset to zero 
@@ -409,16 +447,33 @@
                 errorCount++;
                 console.log("ERROR: no closing comment symbol at line:" + commentLine + " , column:" + commentCol);
                 document.getElementById("taSourceCode").value+="$"
-            }
-
-            if(code.charAt(code.length-1) != "$"){
+				
+				
+				 if(code.charAt(code.length-1) != "$" ){
             	console.log("WARNING: EOF token not found...injecting token. Injection finished!");
             	warningCount++;
-            	code+="$";
-            	 document.getElementById("taSourceCode").value+="$";
-            	 console.log("FINISHED LEXING Program #"+programCount+" Warnings: " + warningCount + " Errors:" + errors);
+				document.getElementById("taSourceCode").value+="$";
+				
+            	 //console.log("FINISHED LEXING Program #"+programCount+" Warnings: " + warningCount + " Errors:" + errors);
             }
+            }
+			
+			else if(inQuotes){
+				errors++;
+				if(errorInCurrentProgram)
+				console.log("ERROR: no closing quote for opening quote on line:" + quoteLine+ " column:" + quoteColumn )
+			}
 
+            else if(code.charAt(code.length-1) != "$" ){
+            	console.log("WARNING: EOF token not found...injecting token. Injection finished!");
+            	warningCount++;
+				if(inComment){
+					inComment = false;
+            	code+="$";
+				document.getElementById("taSourceCode").value+="$";}
+            	 //console.log("FINISHED LEXING Program #"+programCount+" Warnings: " + warningCount + " Errors:" + errors);
+            }
+			console.log("FINISHED LEXING Program #"+programCount+" Warnings: " + warningCount + " Errors:" + errors);
             //console.log("FINISHED LEXING ALL "+programCount+" PROGRAMS. Warnings: " + warningCount + " Errors:" + errors);
     		//console.log("FINISHED LEXING Program #"+programCount+" Warnings: " + warningCount + " Errors:" + errors);
             
