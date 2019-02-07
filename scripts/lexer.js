@@ -10,3 +10,417 @@
         return sourceCode;
     }
 
+ var tokens = [];
+    var tokenIndex = 0;
+    var currentToken = "";
+    var errorCount = 0;
+    var EOF = "$";
+        
+
+    var regStartComment = new RegExp('/\\*');
+    var regEndComment = new RegExp('\\*/');
+    var regEOF = new RegExp("\\$");
+
+    var regLeftBrace = new RegExp('{');
+    var regLeftParen = new RegExp("\\(");
+    var regRightParen = new RegExp("\\)");
+    var regRightBrace = new RegExp("}");
+
+
+    var regBooleanFalse = new RegExp('false');
+    var regBooleanTrue = new RegExp('true');
+    var regWhile = new RegExp('while');;
+    var regIf = new RegExp('if');
+    
+    var regWhiteSpace = new RegExp(' |\t|\r');
+    var regPrint = new RegExp('print');
+    var regID = new RegExp("[a-z]")
+    var regDigit = new RegExp("[0-9]")
+    var regIntOp = new RegExp("\\+");
+    var regAssign = new RegExp('=');
+    //var regSpace = new RegExp('\n | \t ');
+    var regNewLine = new RegExp('\n');
+    var regIsNotEqual = new RegExp('!=');
+    var regIsEqual = new RegExp("==");
+    var regBoolType = new RegExp('boolean')
+    var regIntType = new RegExp ('int');
+    var regStringType = new RegExp('string');
+    var code;
+    var codeBody = document.getElementById("taOutput");
+
+    var regQuote = new RegExp('"');
+
+
+    var inQuotes = false;
+    var inComment = false; 
+    var errorInCurrentProgram = false;
+        var tokenArray;
+
+        var line ;
+        var column ;
+        
+    function init() {
+        // Clear the message box.
+        console.clear();
+        document.getElementById("taOutput").value = "";
+        // Set the initial values for our globals.
+        tokenArray= []; //kept getting some type error when it was named tokens
+        tokenIndex = 0;
+        lexPtr =0;
+        currentToken = ' ';
+        errorCount = 0; 
+        warningCount = 0;    
+
+
+         line =1;
+         column = 0;
+    }
+    
+    function btnCompile_click() {        
+        // This is executed as a result of the usr pressing the 
+        // "compile" button between the two text areas, above.  
+        // Note the <input> element's event handler: onclick="btnCompile_click();
+        init();
+     var codeBody = document.getElementById("taSourceCode").value;
+        
+      code= trim(codeBody);
+                
+        putMessage("Compilation Started");
+        // Grab the tokens from the lexer . . .
+        tokens = lex();
+        putMessage("Lex returned [" + tokens + "]");
+        // . . . and parse!
+        parse();
+        
+        
+    }
+    
+    function putMessage(msg) {
+        document.getElementById("taOutput").value += msg + "\n";
+    }
+    
+    
+    function parse() {
+        putMessage("Parsing [" + tokens + "]");
+        // Grab the next token.
+        //currentToken = getNextToken();
+        // A valid parse derives the G(oal) production, so begin there.
+       
+       // checkToken("boolval");
+        // Report the results.
+        putMessage("Parsing found " + errorCount + " error(s).");   
+       
+       
+        
+        tokenPtr = 0;
+        var errors = 0;
+        var commentLine
+        var commentCol
+        var programCount = 0;
+        	console.log("LEXING PROGRAM #" + programCount);
+        while(lexPtr < code.length){
+        					//First test to see if we are in a comment. If we are, check to see if there's an END COMMENT token > set incomment flag to false so we can stop ignoring stuff.
+
+                        if(inComment)
+                        {
+                          if(regEndComment.test(code.substring(lexPtr, lexPtr+2)))
+                          {
+                             inComment = false;
+                             lexPtr++;
+                          }
+                        }
+
+                       else if(errorInCurrentProgram){
+
+
+
+                        	console.log("LEXING stopped due to error. Warnings:" + warningCount +" errors:" + errors);
+                        	if(regEOF.test(code.charAt(lexPtr)) ){
+                        		errorInCurrentProgram = false; 
+                        		errorCount = 0;
+                        		programCount++;
+                        		warningCount = 0;
+                        		console.log("LEXING NEXT PROGRAM #" + programCount)
+                        	}
+                         //Check for START COMMENT token
+                        }
+                        else if(regStartComment.test(code.substring(lexPtr, lexPtr+2)))
+                        {
+                           inComment = true;
+                           lexPtr++;
+                           commentLine = line;
+                           commentCol = column;
+                        }
+                    		// Check for white space
+                        else if(regWhiteSpace.test(code.charAt(lexPtr)))
+                        {
+                        }
+                        	//Check for LEFT BRACE token
+                        else if(regLeftBrace.test(code.charAt(lexPtr)))
+                        {
+                            addToken("TOKEN_LEFTBRACE ", "{", line, column);
+                            console.log("LEXER -->"+tokenArray[tokenArray.length-1].type + " [ "+ 
+                            	tokenArray[tokenArray.length-1].value +  " ] line:" + 
+                            	tokenArray[tokenArray.length-1].line + " column:" +
+                            	tokenArray[tokenArray.length-1].colNumber);
+                        }
+                        	//CHECK FOR LEFT PARENTHESIS TOKEN
+                        else if(regLeftParen.test(code.charAt(lexPtr)))
+                        {
+                            addToken("TOKEN_LEFTPAREN", "(", line, column);
+                             console.log("LEXER -->"+tokenArray[tokenArray.length-1].type + " [ "+ 
+                            	tokenArray[tokenArray.length-1].value +  " ] line:" + 
+                            	tokenArray[tokenArray.length-1].line + " column:" +
+                            	tokenArray[tokenArray.length-1].colNumber);
+                        }
+                        	//CHECK FOR RIGHT BRACE TOKEN
+                        else if(regRightBrace.test(code.charAt(lexPtr)))
+                        {
+                            addToken("TOKEN_RIGHTBRACE", "}", line, column);
+                             console.log("LEXER -->"+tokenArray[tokenArray.length-1].type + " [ "+ 
+                            	tokenArray[tokenArray.length-1].value +  " ] line:" + 
+                            	tokenArray[tokenArray.length-1].line + " column:" +
+                            	tokenArray[tokenArray.length-1].colNumber);
+                        }
+                        	//CHECK FOR RIGHT PARENTHESIS TOKEN
+                        else if(regRightParen.test(code.charAt(lexPtr)))
+                        {
+                            addToken("TOKEN_RIGHTPAREN", ")", line, column);
+                             console.log("LEXER -->"+tokenArray[tokenArray.length-1].type + " [ "+ 
+                            	tokenArray[tokenArray.length-1].value +  " ] line:" + 
+                            	tokenArray[tokenArray.length-1].line + " column:" +
+                            	tokenArray[tokenArray.length-1].colNumber);
+                        }
+                        	//Check for EOF token
+                         else if(regEOF.test(code.charAt(lexPtr))){
+                           console.log("Finished lexing program #" + programCount + " Warnings:" +warningCount + " Errors:" +errors);
+                           programCount++;
+
+                           if(lexPtr < code.length-1){
+                           	console.log("LEXING PROGRAM #" + programCount);
+                           }
+                        }
+                   
+
+                    		//Check for QUOTE token > anything recognized as ID will be registered as CHAR token 
+                    	else if(regQuote.test(code.charAt(lexPtr)))
+                    	{      
+                        	addToken("TOKEN_QUOTE", '"', line, column);
+                        	 console.log("LEXER -->"+tokenArray[tokenArray.length-1].type + " [ "+ 
+                            	tokenArray[tokenArray.length-1].value +  " ] line:" + 
+                            	tokenArray[tokenArray.length-1].line + " column:" +
+                            	tokenArray[tokenArray.length-1].colNumber);
+
+                        	if(inQuotes)
+                            	inQuotes = false;
+                        	else 
+                            	inQuotes = true;
+                    	}
+                    		//Check for TRUE keyword
+                     	else if(regBooleanTrue.test(code.substring(lexPtr, lexPtr+4 )))
+                     	{
+                        	addToken("TOKEN_BOOLTRUE", code.substring(lexPtr, lexPtr+4), line, column);
+                        	 console.log("LEXER -->"+tokenArray[tokenArray.length-1].type + " [ "+ 
+                            	tokenArray[tokenArray.length-1].value +  " ] line:" + 
+                            	tokenArray[tokenArray.length-1].line + " column:" +
+                            	tokenArray[tokenArray.length-1].colNumber);
+                        	lexPtr+=3;
+                        	column+=3;
+                    	}
+
+                            // Check for IF keyword
+                    	else if(regIf.test(code.substring(lexPtr, lexPtr+2)))
+                    	{
+                        	addToken("TOKEN_IF", code.substring(lexPtr, lexPtr+2), line, column);
+                        	 console.log("LEXER -->"+tokenArray[tokenArray.length-1].type + " [ "+ 
+                            	tokenArray[tokenArray.length-1].value +  " ] line:" + 
+                            	tokenArray[tokenArray.length-1].line + " column:" +
+                            	tokenArray[tokenArray.length-1].colNumber);
+                        	lexPtr++;
+                        	column++;
+                    	}
+                            //Check for WHILE keyword
+                    	else if(regWhile.test(code.substring(lexPtr, lexPtr+5)))
+                    	{
+                        	addToken("TOKEN_WHILE", code.substring(lexPtr, lexPtr+5), line, column);
+                        	 console.log("LEXER -->"+tokenArray[tokenArray.length-1].type + " [ "+ 
+                            	tokenArray[tokenArray.length-1].value +  " ] line:" + 
+                            	tokenArray[tokenArray.length-1].line + " column:" +
+                            	tokenArray[tokenArray.length-1].colNumber);
+                        	lexPtr+=4;
+                        	column+=4;
+                    	}
+                    		//Check for PRINT keyword
+                    	else if(regPrint.test(code.substring(lexPtr, lexPtr+5)))
+                    	{
+                        	addToken("TOKEN_PRINT", code.substring(lexPtr, lexPtr+5), line, column);
+                        	 console.log("LEXER -->"+tokenArray[tokenArray.length-1].type + " [ "+ 
+                            	tokenArray[tokenArray.length-1].value +  " ] line:" + 
+                            	tokenArray[tokenArray.length-1].line + " column:" +
+                            	tokenArray[tokenArray.length-1].colNumber);
+                        	lexPtr+=3;
+                        	column+=3;
+                    	}
+
+                         //Check for FALSE keyword
+                    	else if(regBooleanFalse.test(code.substring(lexPtr, lexPtr+5 )))
+                    	{
+                        	addToken("TOKEN_BOOLFALSE", code.substring(lexPtr, lexPtr+5), line, column);
+                        	 console.log("LEXER -->"+tokenArray[tokenArray.length-1].type + " [ "+ 
+                            	tokenArray[tokenArray.length-1].value +  " ] line:" + 
+                            	tokenArray[tokenArray.length-1].line + " column:" +
+                            	tokenArray[tokenArray.length-1].colNumber);
+                        	lexPtr+=4;
+                        	column+=4;
+                    	}
+
+                    	else if(regStringType.test(code.substring(lexPtr, lexPtr+6)))
+						{
+							addToken("TOKEN_TYPESTRING", "string" , line , column)
+							 console.log("LEXER -->"+tokenArray[tokenArray.length-1].type + " [ "+ 
+                            	tokenArray[tokenArray.length-1].value +  " ] line:" + 
+                            	tokenArray[tokenArray.length-1].line + " column:" +
+                            	tokenArray[tokenArray.length-1].colNumber);
+							lexPtr+=5;
+
+
+						}
+
+						else if(regBoolType.test(code.substring(lexPtr, lexPtr+7)))
+						{
+							addToken("TOKEN_TYPEBOOLEAN", "string" , line , column)
+							 console.log("LEXER -->"+tokenArray[tokenArray.length-1].type + " [ "+ 
+                            	tokenArray[tokenArray.length-1].value +  " ] line:" + 
+                            	tokenArray[tokenArray.length-1].line + " column:" +
+                            	tokenArray[tokenArray.length-1].colNumber);
+							lexPtr+=6;
+
+							
+						}
+
+						else if(regIntType.test(code.substring(lexPtr, lexPtr+3)))
+						{
+							addToken("TOKEN_TYPEINT", "string" , line , column)
+							 console.log("LEXER -->"+tokenArray[tokenArray.length-1].type + " [ "+ 
+                            	tokenArray[tokenArray.length-1].value +  " ] line:" + 
+                            	tokenArray[tokenArray.length-1].line + " column:" +
+                            	tokenArray[tokenArray.length-1].colNumber);
+							lexPtr+=2;
+
+							
+						}
+
+                        // Check for ID tokens
+                    	else if (regID.test(code.charAt(lexPtr))) 
+                    	{
+                        	if(inQuotes)
+                        	{
+                            	addToken("TOKEN_CHAR", code.charAt(lexPtr), line, column);
+                            	 console.log("LEXER -->"+tokenArray[tokenArray.length-1].type + " [ "+ 
+                            	tokenArray[tokenArray.length-1].value +  " ] line:" + 
+                            	tokenArray[tokenArray.length-1].line + " column:" +
+                            	tokenArray[tokenArray.length-1].colNumber);
+                        	}
+                        	else
+                        	{
+                            	addToken("TOKEN_ID", code.charAt(lexPtr), line, column);
+                            	 console.log("LEXER -->"+tokenArray[tokenArray.length-1].type + " [ "+ 
+                            	tokenArray[tokenArray.length-1].value +  " ] line:" + 
+                            	tokenArray[tokenArray.length-1].line + " column:" +
+                            	tokenArray[tokenArray.length-1].colNumber);
+                        	}
+                    	}
+                        	//Check for digit token
+                    	else if (regDigit.test(code.charAt(lexPtr))) 
+                    	{
+                        	addToken("TOKEN_DIGIT", code.charAt(lexPtr), line, column);
+                        	 console.log("LEXER -->"+tokenArray[tokenArray.length-1].type + " [ "+ 
+                            	tokenArray[tokenArray.length-1].value +  " ] line:" + 
+                            	tokenArray[tokenArray.length-1].line + " column:" +
+                            	tokenArray[tokenArray.length-1].colNumber);
+                    	}
+							//Check for ISEQUAL token (==)
+						else if(regIsEqual.test(code.substring(lexPtr, lexPtr+2)))
+						{
+							addToken("TOKEN_ISEQUAL", "==", line, column);
+							lexPtr++;
+							 console.log("LEXER -->"+tokenArray[tokenArray.length-1].type + " [ "+ 
+                            	tokenArray[tokenArray.length-1].value +  " ] line:" + 
+                            	tokenArray[tokenArray.length-1].line + " column:" +
+                            	tokenArray[tokenArray.length-1].colNumber);
+						}
+							//Check for ISNOTEQUAL token (!=)
+						else if (regIsNotEqual.test(code.substring(lexPtr, lexPtr +2)))
+						{
+							lexPtr++
+							addToken("TOKEN_NOTEQUAL", "!=" , line, column)
+							 console.log("LEXER -->"+tokenArray[tokenArray.length-1].type + " [ "+ 
+                            	tokenArray[tokenArray.length-1].value +  " ] line:" + 
+                            	tokenArray[tokenArray.length-1].line + " column:" +
+                            	tokenArray[tokenArray.length-1].colNumber);
+						}
+
+							//Check for ASSIGN token (=)
+						else if(regAssign.test(code.charAt(lexPtr)))
+						{
+							addToken("TOKEN_ASSIGN", "=" , line , column)
+							 console.log("LEXER -->"+tokenArray[tokenArray.length-1].type + " [ "+ 
+                            	tokenArray[tokenArray.length-1].value +  " ] line:" + 
+                            	tokenArray[tokenArray.length-1].line + " column:" +
+                            	tokenArray[tokenArray.length-1].colNumber);
+						}
+
+						else if(regIntOp.test(code.charAt(lexPtr)))
+						{
+							addToken("TOKEN_INTOP", "+" , line , column)
+							 console.log("LEXER -->"+tokenArray[tokenArray.length-1].type + " [ "+ 
+                            	tokenArray[tokenArray.length-1].value +  " ] line:" + 
+                            	tokenArray[tokenArray.length-1].line + " column:" +
+                            	tokenArray[tokenArray.length-1].colNumber);
+						}
+
+
+                            //NEWLINE TEST. I don't need a token for this but it's there for testing purposes. Will increment some pointer here to keep track of lines while Coloumn pointer will reset to zero 
+                    else if (regNewLine.test(code.charAt(lexPtr))) 
+                    {
+                        line++
+                        column = -1;
+                    }
+
+                   else
+                   {
+                   	errors++;
+                   	errorCount++;
+                   	if(!errorInCurrentProgram){
+                   		errorInCurrentProgram = true;
+                   	}
+                    console.log("ERROR: Unexpected token '" + code.charAt(lexPtr) + "' at line:" + line + " , column:" + column);
+
+                   }
+          
+           
+            		lexPtr++;
+            		column++;
+            }
+
+            if(inComment)
+            {
+            	errors++
+                errorCount++;
+                console.log("ERROR: no closing comment symbol at line:" + commentLine + " , column:" + commentCol);
+                document.getElementById("taSourceCode").value+="$"
+            }
+
+            if(code.charAt(code.length-1) != "$"){
+            	console.log("WARNING: EOF token not found...injecting token. Injection finished!");
+            	warningCount++;
+            	code+="$";
+            	 document.getElementById("taSourceCode").value+="$";
+            	 console.log("FINISHED LEXING Program #"+programCount+" Warnings: " + warningCount + " Errors:" + errors);
+            }
+
+            //console.log("FINISHED LEXING ALL "+programCount+" PROGRAMS. Warnings: " + warningCount + " Errors:" + errors);
+    		//console.log("FINISHED LEXING Program #"+programCount+" Warnings: " + warningCount + " Errors:" + errors);
+            
+
+    }
