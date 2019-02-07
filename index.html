@@ -7,8 +7,8 @@
 *To do list:
 
  **MUST BE DONE FOR PROJECT ONE:
-  -Add testing for !=, ==, +, and different types (int, boolean, string)
-  -Figure out if we stop the lexer once 1 error is encountered
+  -Add testing for !=, ==, +, and different types (int, boolean, string) - DONE
+  -Figure out if we stop the lexer once 1 error is encountered - Was told once we encounter 1 error, move on to lexing next program
   -Add multiple program functionality
   -Add warning for no EOF token and auto add it in 
   -Move all lexer crap into its own file
@@ -84,7 +84,7 @@
     var regID = new RegExp("[a-z]")
     var regDigit = new RegExp("[0-9]")
     var regIntOp = new RegExp("\\+");
-    var regAssign = new RegExp(' = ');
+    var regAssign = new RegExp('=');
     //var regSpace = new RegExp('\n | \t ');
     var regNewLine = new RegExp('\n');
     var regIsNotEqual = new RegExp('!=');
@@ -149,7 +149,7 @@
     function parse() {
         putMessage("Parsing [" + tokens + "]");
         // Grab the next token.
-        currentToken = getNextToken();
+        //currentToken = getNextToken();
         // A valid parse derives the G(oal) production, so begin there.
        
        // checkToken("boolval");
@@ -164,15 +164,17 @@
         var commentCol
 
         while(lexPtr < code.length){
+        					//First test to see if we are in a comment. If we are, check to see if there's an END COMMENT token > set incomment flag to false so we can stop ignoring stuff.
 
-                        if(inComment){
-                             if(regEndComment.test(code.substring(lexPtr, lexPtr+2)))
-                             {
-                                inComment = false;
-                                lexPtr++;
-                            }
-
+                        if(inComment)
+                        {
+                          if(regEndComment.test(code.substring(lexPtr, lexPtr+2)))
+                          {
+                             inComment = false;
+                             lexPtr++;
+                          }
                         }
+                         //Check for START COMMENT token
                         else if(regStartComment.test(code.substring(lexPtr, lexPtr+2)))
                         {
                            inComment = true;
@@ -180,118 +182,169 @@
                            commentLine = line;
                            commentCol = column;
                         }
-         
-                    //Just focusing on chugging out tokens in console, will worry about lines, columns, and structural logic later
-                    // Hey Code, buddy, pal, you wanna work some time?
+                    		// Check for white space
                         else if(regWhiteSpace.test(code.charAt(lexPtr)))
                         {
                         }
-
+                        	//Check for LEFT BRACE token
                         else if(regLeftBrace.test(code.charAt(lexPtr)))
                         {
                             addToken("TOKEN_LEFTBRACE", "{", line, column);
                             console.log(tokenArray[tokenArray.length-1])
                         }
-
+                        	//CHECK FOR LEFT PARENTHESIS TOKEN
                         else if(regLeftParen.test(code.charAt(lexPtr)))
                         {
                             addToken("TOKEN_LEFTPAREN", "(", line, column);
                             console.log(tokenArray[tokenArray.length-1])
                         }
-
+                        	//CHECK FOR RIGHT BRACE TOKEN
                         else if(regRightBrace.test(code.charAt(lexPtr)))
                         {
                             addToken("TOKEN_RIGHTBRACE", "}", line, column);
                             console.log(tokenArray[tokenArray.length-1])
                         }
-
+                        	//CHECK FOR RIGHT PARENTHESIS TOKEN
                         else if(regRightParen.test(code.charAt(lexPtr)))
                         {
                             addToken("TOKEN_RIGHTPAREN", ")", line, column);
                             console.log(tokenArray[tokenArray.length-1])
                         }
-
+                        	//Check for EOF token
                          else if(regEOF.test(code.charAt(lexPtr))){
                            console.log("Finished lexing this program");
                         }
                    
 
-                    // TRUE TEST for now we just let the lexPtr skip ahead for tokens with lengths > 1. I'm sure there's a better way to do this but I wanna play some resident evil so LATER. 
-                    else if(regQuote.test(code.charAt(lexPtr)))
-                    {      
-                        addToken("TOKEN_QUOTE", '"', line, column);
-                        console.log(tokenArray[tokenArray.length-1])
-                        
+                    		//Check for QUOTE token > anything recognized as ID will be registered as CHAR token 
+                    	else if(regQuote.test(code.charAt(lexPtr)))
+                    	{      
+                        	addToken("TOKEN_QUOTE", '"', line, column);
+                        	console.log(tokenArray[tokenArray.length-1])
 
-                        if(inQuotes)
-                            inQuotes = false;
-                        else 
-                            inQuotes = true;
-                           
-                        
-                        
-                    }
-                     else if(regBooleanTrue.test(code.substring(lexPtr, lexPtr+4 )))
-                     {
-                        addToken("TOKEN_BOOLTRUE", code.substring(lexPtr, lexPtr+4), line, column);
-                        console.log(tokenArray[tokenArray.length-1])
-                        lexPtr+=3;
-                        column+=3;
-                    }
+                        	if(inQuotes)
+                            	inQuotes = false;
+                        	else 
+                            	inQuotes = true;
+                    	}
+                    		//Check for TRUE keyword
+                     	else if(regBooleanTrue.test(code.substring(lexPtr, lexPtr+4 )))
+                     	{
+                        	addToken("TOKEN_BOOLTRUE", code.substring(lexPtr, lexPtr+4), line, column);
+                        	console.log(tokenArray[tokenArray.length-1])
+                        	lexPtr+=3;
+                        	column+=3;
+                    	}
 
-                            // IF TEST
-                    else if(regIf.test(code.substring(lexPtr, lexPtr+2)))
-                    {
-                        addToken("TOKEN_IF", code.substring(lexPtr, lexPtr+2), line, column);
-                        console.log(tokenArray[tokenArray.length-1])
-                        lexPtr++;
-                        column++;
-                    }
-                            //WHILE TEST
-                    else if(regWhile.test(code.substring(lexPtr, lexPtr+5)))
-                    {
-                        addToken("TOKEN_WHILE", code.substring(lexPtr, lexPtr+5), line, column);
-                        console.log(tokenArray[tokenArray.length-1])
-                        lexPtr+=4;
-                        column+=4;
-                    }
+                            // Check for IF keyword
+                    	else if(regIf.test(code.substring(lexPtr, lexPtr+2)))
+                    	{
+                        	addToken("TOKEN_IF", code.substring(lexPtr, lexPtr+2), line, column);
+                        	console.log(tokenArray[tokenArray.length-1])
+                        	lexPtr++;
+                        	column++;
+                    	}
+                            //Check for WHILE keyword
+                    	else if(regWhile.test(code.substring(lexPtr, lexPtr+5)))
+                    	{
+                        	addToken("TOKEN_WHILE", code.substring(lexPtr, lexPtr+5), line, column);
+                        	console.log(tokenArray[tokenArray.length-1])
+                        	lexPtr+=4;
+                        	column+=4;
+                    	}
+                    		//Check for PRINT keyword
+                    	else if(regPrint.test(code.substring(lexPtr, lexPtr+5)))
+                    	{
+                        	addToken("TOKEN_PRINT", code.substring(lexPtr, lexPtr+5), line, column);
+                        	console.log(tokenArray[tokenArray.length-1])
+                        	lexPtr+=3;
+                        	column+=3;
+                    	}
 
-                    else if(regPrint.test(code.substring(lexPtr, lexPtr+5)))
-                    {
-                        addToken("TOKEN_PRINT", code.substring(lexPtr, lexPtr+5), line, column);
-                        console.log(tokenArray[tokenArray.length-1])
-                        lexPtr+=3;
-                        column+=3;
-                    }
+                         //Check for FALSE keyword
+                    	else if(regBooleanFalse.test(code.substring(lexPtr, lexPtr+5 )))
+                    	{
+                        	addToken("TOKEN_BOOLFALSE", code.substring(lexPtr, lexPtr+5), line, column);
+                        	console.log(tokenArray[tokenArray.length-1])
+                        	lexPtr+=4;
+                        	column+=4;
+                    	}
 
-                         //FALSE TEST
-                    else if(regBooleanFalse.test(code.substring(lexPtr, lexPtr+5 )))
-                    {
-                        addToken("TOKEN_BOOLFALSE", code.substring(lexPtr, lexPtr+5), line, column);
-                        console.log(tokenArray[tokenArray.length-1])
-                        lexPtr+=4;
-                        column+=4;
-                    }
-                        // ID TEST
-                    else if (regID.test(code.charAt(lexPtr))) 
-                    {
-                        if(inQuotes)
-                        {
-                            addToken("TOKEN_CHAR", code.charAt(lexPtr), line, column);
-                            console.log(tokenArray[tokenArray.length-1])
-                        }
-                        else
-                        {
-                            addToken("TOKEN_ID", code.charAt(lexPtr), line, column);
-                            console.log(tokenArray[tokenArray.length-1])
-                        }
-                    }
-                        //DIGIT TEST
-                    else if (regDigit.test(code.charAt(lexPtr))) 
-                    {
-                        addToken("TOKEN_DIGIT", code.charAt(lexPtr), line, column);
-                        console.log(tokenArray[tokenArray.length-1])
-                    }
+                    	else if(regStringType.test(code.substring(lexPtr, lexPtr+6)))
+						{
+							addToken("TOKEN_TYPESTRING", "string" , line , column)
+							console.log(tokenArray[tokenArray.length-1])
+							lexPtr+=5;
+
+
+						}
+
+						else if(regBoolType.test(code.substring(lexPtr, lexPtr+7)))
+						{
+							addToken("TOKEN_TYPEBOOLEAN", "string" , line , column)
+							console.log(tokenArray[tokenArray.length-1])
+							lexPtr+=6;
+
+							
+						}
+
+						else if(regIntType.test(code.substring(lexPtr, lexPtr+3)))
+						{
+							addToken("TOKEN_TYPEINT", "string" , line , column)
+							console.log(tokenArray[tokenArray.length-1])
+							lexPtr+=2;
+
+							
+						}
+
+                        // Check for ID tokens
+                    	else if (regID.test(code.charAt(lexPtr))) 
+                    	{
+                        	if(inQuotes)
+                        	{
+                            	addToken("TOKEN_CHAR", code.charAt(lexPtr), line, column);
+                            	console.log(tokenArray[tokenArray.length-1]);
+                        	}
+                        	else
+                        	{
+                            	addToken("TOKEN_ID", code.charAt(lexPtr), line, column);
+                            	console.log(tokenArray[tokenArray.length-1]);
+                        	}
+                    	}
+                        	//Check for digit token
+                    	else if (regDigit.test(code.charAt(lexPtr))) 
+                    	{
+                        	addToken("TOKEN_DIGIT", code.charAt(lexPtr), line, column);
+                        	console.log(tokenArray[tokenArray.length-1]);
+                    	}
+							//Check for ISEQUAL token (==)
+						else if(regIsEqual.test(code.substring(lexPtr, lexPtr+2)))
+						{
+							addToken("TOKEN_ISEQUAL");
+							lexPtr++;
+							console.log(tokenArray[tokenArray.length-1]);
+						}
+							//Check for ISNOTEQUAL token (!=)
+						else if (regIsNotEqual.test(code.substring(lexPtr, lexPtr +2)))
+						{
+							lexPtr++
+							addToken("TOKEN_NOTEQUAL", "!=" , line, column)
+							console.log(tokenArray[tokenArray.length-1]);
+						}
+
+							//Check for ASSIGN token (=)
+						else if(regAssign.test(code.charAt(lexPtr)))
+						{
+							addToken("TOKEN_ASSIGN", "=" , line , column)
+							console.log(tokenArray[tokenArray.length-1]);
+						}
+
+						else if(regIntOp.test(code.charAt(lexPtr)))
+						{
+							addToken("TOKEN_INTOP", "+" , line , column)
+							console.log(tokenArray[tokenArray.length-1]);
+						}
+
 
                             //NEWLINE TEST. I don't need a token for this but it's there for testing purposes. Will increment some pointer here to keep track of lines while Coloumn pointer will reset to zero 
                     else if (regNewLine.test(code.charAt(lexPtr))) 
@@ -306,20 +359,10 @@
                     console.log("ERROR: Unexpected token '" + code.charAt(lexPtr) + "' at line:" + line + " , column:" + column);
                    }
           
-           //console.log(tokenArray[tokenPtr]);
-            lexPtr++;
-            column++;
-           // tokenPtr++;
-        
+           
+            		lexPtr++;
+            		column++;
             }
-
-
-
-            /*for( i=0; i < tokenArray.length; i++)
-            {
-                console.log(tokenArray[tokenPtr])
-                tokenPtr++;
-            }*/
 
             if(inComment)
             {
@@ -330,103 +373,10 @@
             console.log("LEXER FINISHED. Warnings: " + warningCount + " Errors:" + errorCount);
     }
 
-         //everything below here will be deleted but will keep for now to reference later if i need it lmao.
-    function checkToken(expectedKind) {
-        // Validate that we have the expected token kind and et the next token.
-        switch(expectedKind) {
-            case "type":   putMessage("Expecting Type");
-                           if(currentToken == "i" && tokens.charAt(tokenIndex) == 'n' && tokens.charAt(tokenIndex+1) == 't')
-                               putMessage("Got type");
-            case "char":   putMessage("Expecting char. Current token is :" + currentToken );
-                            var patt = new RegExp ("[a-z]");
-                            if(patt.test(currentToken))
-                                putMessage("Got char!");
-                            else
-                            {
-                                errorCount++;
-                                putMessage("NOT CHAR");
-                            }
-                            break;
-            case "digit":   putMessage("Expecting a digit");
-                            
-                var res = regIsEqual("2 ==2")
-                            putMessage(res +" WHER EU AT");
-                            if (currentToken=="0" || currentToken=="1" || currentToken=="2" || 
-                                currentToken=="3" || currentToken=="4" || currentToken=="5" || 
-                                currentToken=="6" || currentToken=="7" || currentToken=="8" || 
-                                currentToken=="9")
-                            {
-                                putMessage("Got a digit!");
-                            }
-                            else
-                            {
-                                errorCount++;
-                                putMessage("NOT a digit.  Error at position " + tokenIndex + ".");
-                            }
-                            break;
+         
+    
 
-
-            case "boolval" : putMessage("Expecting boolval");
-
-                                putMessage("TokenIndex:" + tokens.charAt(tokenIndex-1) + " TokenIndex afterwards:" + tokens.charAt(tokenIndex+3));
-                                //checks if match true
-                             if(tokens.charAt(tokenIndex-1) == 't' 
-                                && tokens.charAt(tokenIndex) == 'r' 
-                                && tokens.charAt(tokenIndex+1) == 'u' 
-                                && tokens.charAt(tokenIndex+2) == 'e'){
-                                putMessage("Got Boolval!!!(true)");
-                                tokenIndex = tokenIndex+3;
-                        }
-                                //checks if match false
-                             else if(tokens.charAt(tokenIndex-1) == 'f' 
-                                && tokens.charAt(tokenIndex) == 'a' 
-                                && tokens.charAt(tokenIndex+1) == 'l' 
-                                && tokens.charAt(tokenIndex+2) == 's' 
-                                && tokens.charAt(tokenIndex+3) == 'e')
-                             {
-                                tokenIndex =tokenIndex+4;
-                                putMessage("WE GOT A FALSE MATCH");
-                             }
-
-                            else
-                            {
-                                errorCount++;
-                                putMessage("Not a boolval");
-                            }
-                            break;
-
-            case "intop":      putMessage("Expecting an operator");
-                            if (currentToken=="+")
-                            {
-                                putMessage("Got an operator!");
-                            }
-                            else
-                            {
-                                errorCount++;
-                                putMessage("NOT an operator.  Error at position " + tokenIndex + ".");
-                            }
-                            break;
-
-
-            default:        putMessage("Parse Error: Invalid Token Type at position " + tokenIndex + ".");
-                            break;          
-        }
-        // Consume another token, having just checked this one, because that 
-        // will allow the code to see what's coming next... a sort of "look-ahead".
-        currentToken = getNextToken();
-    }
-
-    function getNextToken() {
-        var thisToken = EOF;    // Let's assume that we're at the EOF.
-        if (tokenIndex < tokens.length)
-        {
-            // If we're not at EOF, then return the next token in the stream and advance the index.
-            thisToken = tokens[tokenIndex];
-            putMessage("Current token:" + thisToken);
-            tokenIndex++;
-        }
-        return thisToken;
-    }
+    
     </script>
     <script type="text/javascript" src="utils.js"></script>
 </body>
