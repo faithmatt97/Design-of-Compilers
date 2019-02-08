@@ -15,15 +15,18 @@
   
   
   Weird shit:
-	Pasted in long test code without spaces > got error > resized textbox and ran again > no error > reloaded page and pasted in exact same code > no error
+	Pasted in long test code without spaces > got error > resized textbox and ran again > no error > reloaded page and pasted in exact same code > no error > so we're gucci 
 	
 	
 	
   Stuff i need to fix:
-	string stuff (anything other than id/char is BANNED)
+	string stuff (anything other than id/char is BANNED) DONE
 	if last program has error it does something weird..idk
-	if there's no ending comment token, lex will continuously add $ at end of input
-  
+    >Will lex an extra program that does not exist ):
+	if there's no ending comment token, lex will continuously add $ at end of input 
+      > MY DUMB HEADASS REALIZED I PUT IN THE APPEND $ in the if(inComment) block. SO THAT'S FIXED
+
+  I think we're finished, pack em up boys. I'd like to thank all the anime openings that helped me through this. 
 	
 	
 
@@ -41,7 +44,7 @@
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
     <link rel="stylesheet" type="text/css" href="compiler.css" />
 </head>
-<body onload="init();">
+<body onload="init()" >
     <h1>Faith's Compiler Project</h1>
     <p>
         . . . <em>My name's faith matthew and im gonna hate this semester</em>:
@@ -49,14 +52,24 @@
     <pre>
     </pre>
     <div>
-        <img style="float:right;" src="images/CompilerPhases.png" alt="Compiler Phases diagram" />
-    </div>    
+        <img  style="float:right;" src="images/CompilerPhases.png" alt="Compiler Phases diagram" />
+    </div>  
+    <button onclick = "longTest()"><a href="#LongTest"> Long Test </button>  
+      <button onclick = "Test2()"><a href="#LongTest"> Long Test </button>  
+    <select>
+          <option onselect= "myFunction()" value="longTest">Long Test</option>
+         <option value="longTestNoSpaces">Long Test without spaces</option>
+          <option value="opel">No EOF</option>
+          <option value="audi">Unclosed Comment</option>
+          <option value="audi">Unclosed Quote</option>
+      </select>
     <div>
+
         <textarea id="taSourceCode" cols="32" rows="18"></textarea>
         <br>
         <input type="button" id="btnCompile" value="Compile" onclick="btnCompile_click();"/>
         <br>
-        <textarea id="taOutput" cols="32" rows="18"></textarea>
+        <textarea id="taOutput" cols="128" rows="36"></textarea>
     </div>
     <!-- Footer -->
     <p>
@@ -71,7 +84,21 @@
      <script type="text/javascript" src="scripts/Token.js"></script> 
    
     
+      <script>
+        
+        function longTest(){
+document.getElementById("taSourceCode").value =""
+            
+            document.getElementById("taSourceCode").value = '/*Long Test Case - Everything Except Boolean Declaration */\n{\n  /* Int Declaration */\n  int a\n  int b\n  a = 0\n  b=0\n  /* While Loop */\n  while (a != 3) {\n    print(a)\n    while (b != 3) {\n      print(b)\n      b = 1 + b\n      if (b == 2) {\n        /* Print Statement */\n        print(\"there is no spoon\" /* This will do nothing */ )\n      }\n    }\n    b = 0\n    a = 1+a\n   }\n}\n$'
+        }
 
+        function Test2(){
+
+              document.getElementById("taSourceCode").value = '/*  Provided By \n- Compiler Tyrant\n- Alan G Labouseur\n*/\n{}$\u0009\n{{{{{{}}}}}}$\u0009\n{{{{{{}}}}}}}$\u0009\n{int\u0009@}$'
+
+
+        }
+      </script>
 
          
     
