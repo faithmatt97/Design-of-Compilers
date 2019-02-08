@@ -155,6 +155,14 @@
                         		  putMessage( "-----  LEXING NEXT PROGRAM #" + programCount + " -----")
                                 }
                         	}
+
+                            else if(regQuote.test(code.charAt(lexPtr))){
+                                if(inQuotes)
+                                    inQuotes = false;
+                            }
+
+
+
                          //Check for START COMMENT token
                         }
                         else if(regStartComment.test(code.substring(lexPtr, lexPtr+2)))
@@ -345,8 +353,12 @@
 							}
 								
 							else {
+                                errors++;
+                                if(regNewLine.test(code.charAt(lexPtr)))
+                                    putMessage("\t ERROR: \\n  is not a char on line: " + line + " column:" + column );
+                                else{
 								putMessage("\t ERROR: " +code.charAt(lexPtr) + " is not a char on line: " + line + " column:" + column );
-								errors++;
+								}
 								if(!errorInCurrentProgram){
 									errorInCurrentProgram = true;
 								}
@@ -464,7 +476,7 @@
             {
             	errors++
                 errorCount++;
-                putMessage(" \t ERROR: no closing comment symbol at line:" + commentLine + " , column:" + commentCol);
+                putMessage(" \t ERROR: no closing comment symbol at line:" + commentLine + " , column:" + commentCol +"  Warnings:" +warningCount + " Errors:" +errors);
                // document.getElementById("taSourceCode").value+="$"
 				
 				
@@ -473,8 +485,8 @@
 			
 			else if(inQuotes){
 				errors++;
-				if(errorInCurrentProgram)
-				putMessage(" \t ERROR: no closing quote for opening quote on line:" + quoteLine+ " column:" + quoteColumn )
+				//if(errorInCurrentProgram)
+				putMessage(" \t ERROR: no closing quote for opening quote on line:" + quoteLine+ " column:" + quoteColumn +" Warnings:" +warningCount + " Errors:" +errors)
 			}
 
             else if(code.charAt(code.length-1) != "$" ){
@@ -488,7 +500,7 @@
                  //
             }
 
-               // putMessage("FINISHED LEXING Program #"+programCount+" Warnings: " + warningCount + " Errors:" + errors);
+               putMessage("FINISHED LEXING ALL PROGRAMS");
             
 		
             
