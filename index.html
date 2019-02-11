@@ -1,40 +1,9 @@
 <!DOCTYPE HTML>
 
-<!--
-
-*Gotta move everything once i have something working and then i can cry about it not working AGAIN when moving everything to respective files
-
-*To do list:
-
- **MUST BE DONE FOR PROJECT ONE:   FINITOOOOOOOOOOOOOOOO
-  -Add testing for !=, ==, +, and different types (int, boolean, string) - DONE
-  -Figure out if we stop the lexer once 1 error is encountered - Was told once we encounter 1 error, move on to lexing next program  DONE
-  -Add multiple program functionality        		 DONE
-  -Add warning for no EOF token and auto add it in   DONE
-  -Move all lexer crap into its own file 			 DONE
-  
-  
-  Weird shit:
-	Pasted in long test code without spaces > got error > resized textbox and ran again > no error > reloaded page and pasted in exact same code > no error > so we're gucci 
-	
-	
-	
-  Stuff i need to fix:
-	string stuff (anything other than id/char is BANNED) DONE
-	if last program has error it does something weird..idk
-    >Will lex an extra program that does not exist ):
-	if there's no ending comment token, lex will continuously add $ at end of input 
-      > MY DUMB HEADASS REALIZED I PUT IN THE APPEND $ in the if(inComment) block. SO THAT'S FIXED
-
-  I think we're finished, pack em up boys. I'd like to thank all the anime openings that helped me through this. 
-	
-	
-
-**OPTIONAL (Do I really wanna? :/ )
-  -Move everything from console to textbox on page   I dont feel like it ):
-  -Add some css styling perhaps                      
- 
-
+<!-- 
+		Will move button functions later i guess
+		gotta work on hacking and penetration for now
+		peace out project one
 -->
 <html>
 <head>
@@ -54,15 +23,14 @@
     <div>
         <img  style="float:right;" src="images/CompilerPhases.png" alt="Compiler Phases diagram" />
     </div>  
-    <button onclick = "longTest()"><a href="#LongTest"> Long Test </button>  
-      <button onclick = "Test2()"><a href="#LongTest"> Long Test </button>  
-    <select>
-          <option onselect= "myFunction()" value="longTest">Long Test</option>
-         <option value="longTestNoSpaces">Long Test without spaces</option>
-          <option value="opel">No EOF</option>
-          <option value="audi">Unclosed Comment</option>
-          <option value="audi">Unclosed Quote</option>
-      </select>
+    <button onclick = "longTest()">Long Test </button>  
+      <button onclick = "longTestSpace()"> Long Test w/o Spaces </button>  
+      <button onclick = "Test2()">  Invalid Token</button>
+      <button onclick = "unclosedComment()"> Unclosed Comment </button>
+      <button onclick = "unclosedString()"> Unclosed String </button>
+      <button onclick = "noEOF()"> No EOF Token </button>
+      <button onclick = "invalidString()"> Invalid String </button>
+   
     <div>
 
         <textarea id="taSourceCode" cols="32" rows="18"></textarea>
@@ -97,6 +65,29 @@ document.getElementById("taSourceCode").value =""
               document.getElementById("taSourceCode").value = '/*  Provided By \n- Compiler Tyrant\n- Alan G Labouseur\n*/\n{}$\u0009\n{{{{{{}}}}}}$\u0009\n{{{{{{}}}}}}}$\u0009\n{int\u0009@}$'
 
 
+        }
+
+        function unclosedComment(){
+        	document.getElementById("taSourceCode").value ='/* AHHHHHHHHHH*/\r\n\r\nstring b\r\n\r\n/* I love finding new bugs YAY';
+        }
+
+        function unclosedString(){
+        	document.getElementById("taSourceCode").value ='print("i will walk backwards into oblivion while facing god)';
+        }
+
+        function noEOF(){
+
+        	document.getElementById("taSourceCode").value = '{"hi"}';
+        	
+        }
+
+        function longTestSpace(){
+        	document.getElementById("taSourceCode").value = '/*LongTestCase-EverythingExceptBooleanDeclaration*/{/*IntDeclaration*/\r\nintaintba=0b=0/*WhileLoop*/while(a!=3){print(a)while(b!=3){print(b)b=1+bif(b==2)\r\n{/*PrintStatement*/print(\"there is no spoon\"/*Thiswilldonothing*/)}}b=0a=1+a}}$';
+        }
+
+        function invalidString(){
+
+        	document.getElementById("taSourceCode").value = 'string b = \"in dangan ronpa there is a robot named K1-B0\"\r\n\r\nprint(\"the grammar doesnt like his name so we gotta call him keebo\")$';
         }
       </script>
 
