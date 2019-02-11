@@ -1,4 +1,60 @@
 /* lexer.js  */
+ var tokens = [];
+var tokenIndex = 0;
+var currentToken = "";
+var errorCount = 0;
+var EOF = "$";
+        
+
+var regStartComment = new RegExp('/\\*');
+var regEndComment = new RegExp('\\*/');
+var regEOF = new RegExp("\\$");
+
+var regLeftBrace = new RegExp('{');
+var regLeftParen = new RegExp("\\(");
+var regRightParen = new RegExp("\\)");
+var regRightBrace = new RegExp("}");
+
+
+var regBooleanFalse = new RegExp('false');
+var regBooleanTrue = new RegExp('true');
+var regWhile = new RegExp('while');;
+var regIf = new RegExp('if');
+    
+var regWhiteSpace = new RegExp(' |\t|\r');
+var regPrint = new RegExp('print');
+var regID = new RegExp("[a-z]")
+var regDigit = new RegExp("[0-9]")
+var regIntOp = new RegExp("\\+");
+var regAssign = new RegExp('=');
+    //var regSpace = new RegExp('\n | \t ');
+var regNewLine = new RegExp('\n');
+var regIsNotEqual = new RegExp('!=');
+var regIsEqual = new RegExp("==");
+var regBoolType = new RegExp('boolean')
+var regIntType = new RegExp ('int');
+var regStringType = new RegExp('string');
+var code;
+var codeBody = document.getElementById("taOutput");
+
+var regQuote = new RegExp('"');
+
+
+var inQuotes = false;         //track whether or not we;re in quote
+var inComment = false;        //track whether or not we're in comment
+var errorInCurrentProgram = false;   //track if we encountered error so we can skip to next program
+var tokenArray;                       //holds all tokens
+
+var line;     //keep track of line
+var column;   //keep track of columns
+
+
+var commentLine     //tracks latest start comment token
+var commentCol      //  ^^^^^
+var programCount = 0;
+        
+var quoteLine;      //tracks latest start quote token
+var quoteColumn;     // ^^^^^
 
     function lex()
     {
@@ -10,55 +66,7 @@
         return sourceCode;
     }
 
- var tokens = [];
-    var tokenIndex = 0;
-    var currentToken = "";
-    var errorCount = 0;
-    var EOF = "$";
-        
-
-    var regStartComment = new RegExp('/\\*');
-    var regEndComment = new RegExp('\\*/');
-    var regEOF = new RegExp("\\$");
-
-    var regLeftBrace = new RegExp('{');
-    var regLeftParen = new RegExp("\\(");
-    var regRightParen = new RegExp("\\)");
-    var regRightBrace = new RegExp("}");
-
-
-    var regBooleanFalse = new RegExp('false');
-    var regBooleanTrue = new RegExp('true');
-    var regWhile = new RegExp('while');;
-    var regIf = new RegExp('if');
-    
-    var regWhiteSpace = new RegExp(' |\t|\r');
-    var regPrint = new RegExp('print');
-    var regID = new RegExp("[a-z]")
-    var regDigit = new RegExp("[0-9]")
-    var regIntOp = new RegExp("\\+");
-    var regAssign = new RegExp('=');
-    //var regSpace = new RegExp('\n | \t ');
-    var regNewLine = new RegExp('\n');
-    var regIsNotEqual = new RegExp('!=');
-    var regIsEqual = new RegExp("==");
-    var regBoolType = new RegExp('boolean')
-    var regIntType = new RegExp ('int');
-    var regStringType = new RegExp('string');
-    var code;
-    var codeBody = document.getElementById("taOutput");
-
-    var regQuote = new RegExp('"');
-
-
-    var inQuotes = false;
-    var inComment = false; 
-    var errorInCurrentProgram = false;
-        var tokenArray;
-
-        var line ;
-        var column ;
-        
+   
     function init() {
         // Clear the message box.
         console.clear();
@@ -84,17 +92,10 @@
         // This is executed as a result of the usr pressing the 
         // "compile" button between the two text areas, above.  
         // Note the <input> element's event handler: onclick="btnCompile_click();
-        init();
-     var codeBody = document.getElementById("taSourceCode").value;
-        
+      init();
+      var codeBody = document.getElementById("taSourceCode").value;  
       code= trim(codeBody);
-                
-       // putMessage("Compilation Started");
-        // Grab the tokens from the lexer . . .
-        //tokens = lex();
-        //putMessage("Lex returned [" + tokens + "]");
-        // . . . and parse!
-        parse();
+      parse();
         
         
     }
@@ -105,18 +106,7 @@
     
     
     function parse() {
-       //putMessage("Parsing [" + tokens + "]");
-        // Grab the next token.
-        //currentToken = getNextToken();
-        // A valid parse derives the G(oal) production, so begin there.
        
-       // checkToken("boolval");
-        // Report the results.
-        //putMessage("Parsing found " + errorCount + " error(s).");   
-       
-       
-        
-        tokenPtr = 0;
         var errors = 0;
         var errorCount = 0;
         var commentLine
@@ -126,10 +116,12 @@
 		var quoteLine;
 		var quoteColumn;
         	putMessage("LEXING PROGRAM #" + programCount);
+
+        //I'm too scared to get rid of errorsCount and mess something up. So it stays!
         while(lexPtr < code.length){
         					//First test to see if we are in a comment. If we are, check to see if there's an END COMMENT token > set incomment flag to false so we can stop ignoring stuff.
 
-                        if(inComment)
+                      if(inComment)
                         {
                           if(regEndComment.test(code.substring(lexPtr, lexPtr+2)))
                           {
@@ -138,23 +130,21 @@
                           }
                         }
 
+                            // If there's error > ignore everything till EOF so we can lex next program. Tbh idk why the QUOTE test is in there, but i only add stuff when i fuck up 
+                            //so it's there for a reason. 
+                      else if(errorInCurrentProgram){
 
-                       else if(errorInCurrentProgram){
-
-							//inQuotes = false;
-
-                        	//putMessage("LEXING stopped due to error. Warnings:" + warningCount +" errors:" + errors);
-                            //errorInCurrentProgram = false; 
-                        	if(regEOF.test(code.charAt(lexPtr))){
+                        	if(regEOF.test(code.charAt(lexPtr)))
+                            {
                                 putMessage("LEXING of Program #"+ programCount+ " stopped due to error. Warnings:" + warningCount +" errors:" + errors);
                         		errorInCurrentProgram = false; 
                         		errorCount = 0;
                                 errors=0;
                         		
                         		warningCount = 0;
-                                if(lexPtr != code.length-1)
+                                if(lexPtr != code.length-1) //check if we're at end of program, if not move onto next. 
                                 {
-                                 programCount++;
+                                  programCount++;
                         		  putMessage( "-----  LEXING NEXT PROGRAM #" + programCount + " -----")
                                 }
                         	}
@@ -165,7 +155,7 @@
                             }
 
                         }
-                        else if(inQuotes)
+                        else if(inQuotes)  //If in quotes > spew out tokens for white spaces, CHARS, and QUOTE > else > return error for everything else
                         {
                             if(regID.test(code.charAt(lexPtr)))
                             {
@@ -208,6 +198,7 @@
                             }
                             
                         }
+                          //CHECK FOR START COMMENT TOKEN
                         else if(regStartComment.test(code.substring(lexPtr, lexPtr+2)))
                         {
                            inComment = true;
@@ -215,7 +206,7 @@
                            commentLine = line;
                            commentCol = column;
                         }
-                    		// Check for white space
+                    		
                         
                         	//Check for LEFT BRACE token
                         else if(regLeftBrace.test(code.charAt(lexPtr)))
@@ -253,10 +244,6 @@
                             	tokenArray[tokenArray.length-1].line + " column:" +
                             	tokenArray[tokenArray.length-1].colNumber);
                         }
-                        	//Check for EOF token
-                         
-                   
-
                     		//Check for QUOTE token > anything recognized as ID will be registered as CHAR token 
                     	else if(regQuote.test(code.charAt(lexPtr)))
                     	{      
@@ -329,7 +316,7 @@
                         	lexPtr+=4;
                         	column+=4;
                     	}
-
+                            //CHECK FOR VAR TYPE STRING
                     	else if(regStringType.test(code.substring(lexPtr, lexPtr+6)))
 						{
 							addToken("TOKEN_TYPESTRING", "string" , line , column)
@@ -341,7 +328,7 @@
 
 
 						}
-
+                            //CHECK FOR VAR TYPE BOOLEAN
 						else if(regBoolType.test(code.substring(lexPtr, lexPtr+7)))
 						{
 							addToken("TOKEN_TYPEBOOLEAN", "boolean" , line , column)
@@ -353,7 +340,7 @@
 
 							
 						}
-
+                            //CHECK FOR VAR TYPE INT
 						else if(regIntType.test(code.substring(lexPtr, lexPtr+3)))
 						{
 							addToken("TOKEN_TYPEINT", "int" , line , column)
@@ -425,7 +412,7 @@
                             	tokenArray[tokenArray.length-1].line + " column:" +
                             	tokenArray[tokenArray.length-1].colNumber);
 						}
-
+                            //CHECK FOR + TOKEN
 						else if(regIntOp.test(code.charAt(lexPtr)))
 						{
 							addToken("TOKEN_INTOP", "+" , line , column)
@@ -434,12 +421,13 @@
                             	tokenArray[tokenArray.length-1].line + " column:" +
                             	tokenArray[tokenArray.length-1].colNumber);
 						}
-						
+						//THIS IS HERE SO SPACES DONT MESS WITH ANYTHING
                         else if(regWhiteSpace.test(code.charAt(lexPtr)))
                         {
                         }
 
-						else if(regEOF.test(code.charAt(lexPtr))){
+						else if(regEOF.test(code.charAt(lexPtr)))
+                        {
                            addToken("TOKEN_EOF", "$" , line , column)
                            putMessage(" \t LEXER -->"+tokenArray[tokenArray.length-1].type + " [ "+ 
                                 tokenArray[tokenArray.length-1].value +  " ] line:" + 
@@ -448,36 +436,38 @@
                            putMessage("Finished lexing program #" + programCount + " Warnings:" +warningCount + " Errors:" +errors);
                            programCount++;
 
-                           if(lexPtr < code.length-1){
+                           if(lexPtr < code.length-1) //i know this can turn into one line but everything is working and im not risking ANYTHING
+                           {
                            	putMessage("\n  \n LEXING PROGRAM #" + programCount);
                            }
                         }
 
 
-                            //NEWLINE TEST. I don't need a token for this but it's there for testing purposes. Will increment some pointer here to keep track of lines while Coloumn pointer will reset to zero 
-                    else if (regNewLine.test(code.charAt(lexPtr))) 
-                    {
-                        line++
-                        column = -1;
-                    }
+                            //NEWLINE TEST. 
+                        else if (regNewLine.test(code.charAt(lexPtr))) 
+                        {
+                            line++
+                            column = -1;
+                        }
+                        //ANYTHING ELSE IS INVALID AND WILL CAUSE ERROR
+                        else
+                        {
+                   	        errors++;
+                   	        errorCount++;
+                   	        if(!errorInCurrentProgram)
+                            {
+                   		       errorInCurrentProgram = true;
+                   	        }
+                            putMessage(" \t ERROR: Unexpected token '" + code.charAt(lexPtr) + "' at line:" + line + " , column:" + column);
 
-                   else
-                   {
-                   	errors++;
-                   	errorCount++;
-                   	if(!errorInCurrentProgram){
-                   		errorInCurrentProgram = true;
-                   	}
-                    putMessage(" \t ERROR: Unexpected token '" + code.charAt(lexPtr) + "' at line:" + line + " , column:" + column);
-
-                   }
+                        }
           
            
             		lexPtr++;
             		column++;
             }
 
-             
+             //Will probably change this later so its in while loop. Probs will go something like this: If at final token > check to see if in comment or quotes > return necessary error or w.e
              if(inComment)
             {
             	errors++
