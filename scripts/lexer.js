@@ -138,6 +138,7 @@
                           }
                         }
 
+
                        else if(errorInCurrentProgram){
 
 							//inQuotes = false;
@@ -163,9 +164,49 @@
                                     inQuotes = false;
                             }
 
+                        }
+                        else if(inQuotes)
+                        {
+                            if(regID.test(code.charAt(lexPtr)))
+                            {
+                                addToken("TOKEN_CHAR", code.charAt(lexPtr), line, column);
+                                putMessage(" \t LEXER -->"+tokenArray[tokenArray.length-1].type + " [ "+ 
+                                tokenArray[tokenArray.length-1].value +  " ] line:" + 
+                                tokenArray[tokenArray.length-1].line + " column:" +
+                                tokenArray[tokenArray.length-1].colNumber);
+                            }
 
-
-                         //Check for START COMMENT token
+                            else if(regWhiteSpace.test(code.charAt(lexPtr)))
+                                {
+                                    addToken("TOKEN_SPACE", " ", line, column)
+                                    putMessage(" \t LEXER -->"+tokenArray[tokenArray.length-1].type + " [ "+ 
+                                    tokenArray[tokenArray.length-1].value +  " ] line:" + 
+                                    tokenArray[tokenArray.length-1].line + " column:" +
+                                    tokenArray[tokenArray.length-1].colNumber);
+                                }
+                            else if(regQuote.test(code.charAt(lexPtr)))
+                            {
+                                addToken("TOKEN_QUOTE", '"', line, column);
+                                putMessage(" \t LEXER -->"+tokenArray[tokenArray.length-1].type + " [ "+ 
+                                tokenArray[tokenArray.length-1].value +  " ] line:" + 
+                                tokenArray[tokenArray.length-1].line + " column:" +
+                                tokenArray[tokenArray.length-1].colNumber);
+                                
+                                inQuotes = false;
+                            }
+                                
+                            else {
+                                errors++;
+                                if(regNewLine.test(code.charAt(lexPtr)))
+                                    putMessage("\t ERROR: \\n  is not a char on line: " + line + " column:" + column );
+                                else{
+                                putMessage("\t ERROR: " +code.charAt(lexPtr) + " is not a char on line: " + line + " column:" + column );
+                                }
+                                if(!errorInCurrentProgram){
+                                    errorInCurrentProgram = true;
+                                }
+                            }
+                            
                         }
                         else if(regStartComment.test(code.substring(lexPtr, lexPtr+2)))
                         {
@@ -273,8 +314,8 @@
                             	tokenArray[tokenArray.length-1].value +  " ] line:" + 
                             	tokenArray[tokenArray.length-1].line + " column:" +
                             	tokenArray[tokenArray.length-1].colNumber);
-                        	lexPtr+=3;
-                        	column+=3;
+                        	lexPtr+=4;
+                        	column+=4;
                     	}
 
                          //Check for FALSE keyword
@@ -324,49 +365,7 @@
 
 							
 						}
-						else if(inQuotes)
-						{
-							if(regID.test(code.charAt(lexPtr)))
-							{
-								addToken("TOKEN_CHAR", code.charAt(lexPtr), line, column);
-                            	putMessage(" \t LEXER -->"+tokenArray[tokenArray.length-1].type + " [ "+ 
-                            	tokenArray[tokenArray.length-1].value +  " ] line:" + 
-                            	tokenArray[tokenArray.length-1].line + " column:" +
-                            	tokenArray[tokenArray.length-1].colNumber);
-							}
-
-                            else if(regWhiteSpace.test(code.charAt(lexPtr)))
-                                {
-                                    addToken("TOKEN_SPACE", " ", line, column)
-                                    putMessage(" \t LEXER -->"+tokenArray[tokenArray.length-1].type + " [ "+ 
-                                    tokenArray[tokenArray.length-1].value +  " ] line:" + 
-                                    tokenArray[tokenArray.length-1].line + " column:" +
-                                    tokenArray[tokenArray.length-1].colNumber);
-                                }
-							else if(regQuote.test(code.charAt(lexPtr)))
-							{
-								addToken("TOKEN_QUOTE", '"', line, column);
-								putMessage(" \t LEXER -->"+tokenArray[tokenArray.length-1].type + " [ "+ 
-                            	tokenArray[tokenArray.length-1].value +  " ] line:" + 
-                            	tokenArray[tokenArray.length-1].line + " column:" +
-                            	tokenArray[tokenArray.length-1].colNumber);
-								
-								inQuotes = false;
-							}
-								
-							else {
-                                errors++;
-                                if(regNewLine.test(code.charAt(lexPtr)))
-                                    putMessage("\t ERROR: \\n  is not a char on line: " + line + " column:" + column );
-                                else{
-								putMessage("\t ERROR: " +code.charAt(lexPtr) + " is not a char on line: " + line + " column:" + column );
-								}
-								if(!errorInCurrentProgram){
-									errorInCurrentProgram = true;
-								}
-							}
-							
-						}
+						
                         // Check for ID tokens
                     	else if (regID.test(code.charAt(lexPtr))) 
                     	{
@@ -441,6 +440,11 @@
                         }
 
 						else if(regEOF.test(code.charAt(lexPtr))){
+                           addToken("TOKEN_EOF", "$" , line , column)
+                           putMessage(" \t LEXER -->"+tokenArray[tokenArray.length-1].type + " [ "+ 
+                                tokenArray[tokenArray.length-1].value +  " ] line:" + 
+                                tokenArray[tokenArray.length-1].line + " column:" +
+                                tokenArray[tokenArray.length-1].colNumber);
                            putMessage("Finished lexing program #" + programCount + " Warnings:" +warningCount + " Errors:" +errors);
                            programCount++;
 
@@ -491,13 +495,13 @@
 				putMessage(" \t ERROR: no closing quote for opening quote on line:" + quoteLine+ " column:" + quoteColumn +" Warnings:" +warningCount + " Errors:" +errors)
 			}
 
-            else if(code.charAt(code.length-1) != "$" ){
+           else   if(code.charAt(code.length-1) != "$" ){
                 putMessage("WARNING: EOF token not found...injecting token. Injection finished!");
                 warningCount++;
                 document.getElementById("taSourceCode").value+="$"
-                if(inComment){
-                    inComment = false;
-                code+="$";}
+                //if(inComment){
+                    //inComment = false;
+                //code+="$";}
                 //document.getElementById("taSourceCode").value+="$";}
                  //
             }
