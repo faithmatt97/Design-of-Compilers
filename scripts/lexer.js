@@ -118,6 +118,7 @@
         
         tokenPtr = 0;
         var errors = 0;
+        var errorCount = 0;
         var commentLine
         var commentCol
         var programCount = 0;
@@ -147,6 +148,7 @@
                                 putMessage("LEXING of Program #"+ programCount+ " stopped due to error. Warnings:" + warningCount +" errors:" + errors);
                         		errorInCurrentProgram = false; 
                         		errorCount = 0;
+                                errors=0;
                         		
                         		warningCount = 0;
                                 if(lexPtr != code.length-1)
@@ -301,7 +303,7 @@
 
 						else if(regBoolType.test(code.substring(lexPtr, lexPtr+7)))
 						{
-							addToken("TOKEN_TYPEBOOLEAN", "string" , line , column)
+							addToken("TOKEN_TYPEBOOLEAN", "boolean" , line , column)
 							 putMessage(" \t LEXER -->"+tokenArray[tokenArray.length-1].type + " [ "+ 
                             	tokenArray[tokenArray.length-1].value +  " ] line:" + 
                             	tokenArray[tokenArray.length-1].line + " column:" +
@@ -313,7 +315,7 @@
 
 						else if(regIntType.test(code.substring(lexPtr, lexPtr+3)))
 						{
-							addToken("TOKEN_TYPEINT", "string" , line , column)
+							addToken("TOKEN_TYPEINT", "int" , line , column)
 							 putMessage(" \t LEXER -->"+tokenArray[tokenArray.length-1].type + " [ "+ 
                             	tokenArray[tokenArray.length-1].value +  " ] line:" + 
                             	tokenArray[tokenArray.length-1].line + " column:" +
