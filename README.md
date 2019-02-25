@@ -1,4 +1,3 @@
 # Design-of-Compilers
-I change my mind
-
-Language: JS
+How to Build:
+Open index.html
