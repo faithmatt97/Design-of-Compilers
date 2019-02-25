@@ -131,7 +131,7 @@ var programs
         document.getElementById("taOutput").value += msg + "\n";
     }
     
-    
+   
     function parse() {
        
         var errors = 0;
@@ -545,7 +545,114 @@ var programs
 				lexPtr = 0;
 				line++;
 				column = 0;
+				programTokens = tokenArray;
+				console.log(tokenArray);
+				tokenArray = [];
+				parseBlock();
             }
             putMessage("FINISHED LEXING ALL PROGRAMS");
 
+           
+
     }
+
+
+
+    // I dont know what the fuck is going on. good luck. 
+function getToken(){
+	currentToken = programTokens.shift()
+	console.log(currentToken);
+}
+
+function checkToken(){
+	return programTokens[0];
+}
+function parseProgram()
+
+
+{
+	console.log(programTokens);
+	parseBlock()
+}
+
+function parseBlock(){
+	console.log("Expecting Block")
+	getToken();
+	console.log("Expecting [ { ]")
+	if(currentToken.value.match("{")){
+		console.log("GOOD! Got [ { ]")
+		getToken();
+
+		if(parseStatementList()){
+
+
+
+			if(currentToken.value ="}"){
+				console.log("Block FOUND")
+			}
+		}
+		
+
+		
+	}
+
+	else {console.log("PARSE ERROR: Got " + currentToken.value + " instead of {")
+
+
+	}
+}
+
+function parseStatementList(){
+	getToken()
+
+	if(currentToken.type-"TOKEN_PRINT"){
+		parsePrintStatement();
+	}
+
+	else if(currentToken.type-"TOKEN_ASSIGN"){
+		parseAssignSrarement();
+	}
+	else if(currentToken.type-"TOKEN_WHILE"){
+		parseWhileStatement();
+	}
+	else if(currentToken.type-"if (true) {}"){
+		parseIfStatement()
+		
+	}
+}
+
+function parseExpr(){
+	if(parseIntExpr())
+		return true;
+	else if(parseBoolesnExpr())
+		return true;
+}
+function parseIntExpr(){
+	if(programTokens[0].type =="TOKEN_DIGIT" && programTokens[1].type=="TOKEN_INTOP" && parseExpr())
+			console.log("true");
+	else if(programTokens[0].type=="TOKEN_DIGIT")
+		console.log("true")
+	else{
+		console.log("FALSE");
+	}
+}
+
+function parseBooleanExpr(){
+		return false;
+}
+
+
+function parsePrintStatement(){
+	getToken();
+	if(currentToken.type="TOKEN_LEFTPAREN"){
+		console.log("Found [ ( ]")
+		if (parseExpr()){
+			getToken();
+			if(currentToken.type="TOKEN_RIGHTPAREN"){
+				console.log("Founc [ ) ]")
+			}
+		}
+
+
+	}
+}
