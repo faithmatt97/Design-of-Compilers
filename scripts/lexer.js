@@ -255,7 +255,7 @@ var programs
                         	//Check for LEFT BRACE token
                         else if(regLeftBrace.test(programs[i].charAt(lexPtr)))
                         {
-                            addToken("TOKEN_LEFTBRACE ", "{", line, column);
+                            addToken("TOKEN_LEFTBRACE", "{", line, column);
                             putMessage(" \t LEXER -->"+tokenArray[tokenArray.length-1].type + " [ "+ 
                             	tokenArray[tokenArray.length-1].value +  " ] line:" + 
                             	tokenArray[tokenArray.length-1].line + " column:" +
@@ -546,9 +546,24 @@ var programs
 				line++;
 				column = 0;
 				programTokens = tokenArray;
-				console.log(tokenArray);
+				//console.log(tokenArray);
 				tokenArray = [];
-				parseBlock();
+				ok =checkToken();
+				console.log(ok)
+				
+				if(checkToken().type === "TOKEN_LEFTBRACE"){
+					console.log("IT WORKS");
+				}
+				else{
+					console.log("IT DOESNT WORK");
+				}
+
+				parseProgram();
+
+				//console.log(match(["TOKEN_LEFTBRACE	"]))
+
+
+
             }
             putMessage("FINISHED LEXING ALL PROGRAMS");
 
@@ -561,98 +576,182 @@ var programs
     // I dont know what the fuck is going on. good luck. 
 function getToken(){
 	currentToken = programTokens.shift()
-	console.log(currentToken);
+	//console.log(currentToken);
 }
 
 function checkToken(){
 	return programTokens[0];
 }
+
+function LookAhead(){
+	return programTokens[1];
+}
+
 function parseProgram()
-
-
 {
-	console.log(programTokens);
+	console.log("PARSER --> Parsing Program");
 	parseBlock()
 }
 
 function parseBlock(){
-	console.log("Expecting Block")
-	getToken();
-	console.log("Expecting [ { ]")
-	if(currentToken.value.match("{")){
-		console.log("GOOD! Got [ { ]")
-		getToken();
-
-		if(parseStatementList()){
-
-
-
-			if(currentToken.value ="}"){
-				console.log("Block FOUND")
-			}
-		}
-		
-
-		
-	}
-
-	else {console.log("PARSE ERROR: Got " + currentToken.value + " instead of {")
-
-
-	}
+	console.log("PARSER --> Parsing Block");
+	//if(checkToken().type === "TOKEN_LEFTBRACE"){
+		match(["TOKEN_LEFTBRACE"]);
+		parseStatementList();
+		match(["TOKEN_RIGHTBRACE"])
+	//}
 }
 
 function parseStatementList(){
-	getToken()
+	console.log("PARSER --> Parsing StatementList");
+	
+	if( (checkToken().type ==="TOKEN_PRINT") || (checkToken().type === "TOKEN_ASSIGN") ||(checkToken().type === "TOKEN_TYPEINT") || (checkToken().type === "TOKEN_WHILE") || (checkToken().type === "TOKEN_IF")){
+		parseStatement();
+		//parseStatementList()
+	}
 
-	if(currentToken.type-"TOKEN_PRINT"){
+	else{
+		console.log("Received Epsilon ");
+	}
+
+	
+
+}
+
+function parseStatement(){
+	console.log("PARSER --> Parsing for Statement");
+
+	if(checkToken().type === "TOKEN_PRINT")
 		parsePrintStatement();
-	}
-
-	else if(currentToken.type-"TOKEN_ASSIGN"){
-		parseAssignSrarement();
-	}
-	else if(currentToken.type-"TOKEN_WHILE"){
+	
+	else if(checkToken().type === "TOKEN_ASSIGN")
+		parseAssignStatement();
+	
+	else if( (checkToken().type === "TOKEN_TYPEINT") || (checkToken().type === "TOKEN_TYPEBOOLEAN") || (checkToken().type === "TOKEN_TYPESTRING"))
+		parseVarDecl();
+	
+	else if(checkToken().type === "TOKEN_WHILE")
 		parseWhileStatement();
-	}
-	else if(currentToken.type-"if (true) {}"){
-		parseIfStatement()
-		
-	}
+
+	else if (checkToken().type === "TOKEN_IF")
+		parseIfStatement();
+
+	else
+		parseBlock();
 }
 
 function parseExpr(){
-	if(parseIntExpr())
-		return true;
-	else if(parseBoolesnExpr())
-		return true;
+	console.log("PARSER --> Parsing for Expression");
+
+	if(checkToken().type === "TOKEN_DIGIT")
+		parseIntExpr();
+	 if (checkToken().type ==="TOKEN_QUOTE")
+		parseStringExpr();
+	else if ( (checkToken().type === "TOKEN_LEFTPAREN") || (checkToken().type === "TOKEN_BOOLFALSE") || (checkToken().type === "TOKEN_BOOLTRUE"))
+		parseBooleanExpr();
+	else if(checkToken().type ==="TOKEN_ID"){
+		console.log("Parsing for ID")
+		match(["TOKEN_ID"]);
+	}
+	
 }
 function parseIntExpr(){
-	if(programTokens[0].type =="TOKEN_DIGIT" && programTokens[1].type=="TOKEN_INTOP" && parseExpr())
-			console.log("true");
-	else if(programTokens[0].type=="TOKEN_DIGIT")
-		console.log("true")
-	else{
-		console.log("FALSE");
+	console.log("PARSER --> Parsing for IntExpr");
+
+	if(checkToken().type === "TOKEN_DIGIT" && (LookAhead().type === "TOKEN_INTOP")){
+		match(["TOKEN_DIGIT"]);
+		match(["TOKEN_INTOP"]);
+		parseExpr();
 	}
+
+	else 
+		match(["TOKEN_DIGIT"]);
+
+	
+}
+
+function parseStringExpr(){
+	console.log("PARSER --> Parsing for StringExpr");
+
+	match(["TOKEN_QUOTE"]);
+	parseCharList();
+	match(["TOKEN_QUOTE"]);
 }
 
 function parseBooleanExpr(){
-		return false;
-}
 
-
-function parsePrintStatement(){
-	getToken();
-	if(currentToken.type="TOKEN_LEFTPAREN"){
-		console.log("Found [ ( ]")
-		if (parseExpr()){
-			getToken();
-			if(currentToken.type="TOKEN_RIGHTPAREN"){
-				console.log("Founc [ ) ]")
-			}
+	console.log("PARSER --> Parsing for BooleanExpr");
+		if (checkToken().type === "TOKEN_LEFTPAREN"){
+			match(["TOKEN_LEFTPAREN"])
+			parseExpr();
+			match(["TOKEN_ISEQUAL", "TOKEN_NOTEQUAL"]);
+			parseExpr();
+			match(["TOKEN_RIGHTPAREN"]);
 		}
 
+		else
+			match(["TOKEN_BOOLFALSE", "TOKEN_BOOLTRUE"]);
 
+}
+
+function parseCharList(){
+	console.log("PARSER --> Parsing for Charlist");
+	if(checkToken().type === "TOKEN_CHAR"){
+		match(["TOKEN_CHAR"]);
+		parseCharList();
+	}
+
+	else if(checkToken().type === "TOKEN_SPACE"){
+		match(["TOKEN_SPACE"]);
+		parseCharList();
+	}
+
+	else {
+
+	}
+}
+
+function parsePrintStatement(){
+	console.log("PARSER --> Parsing for Print Statement");
+	match(["TOKEN_PRINT"]);
+	match(["TOKEN_LEFTPAREN"]);
+	parseExpr();
+	match(["TOKEN_RIGHTPAREN"]);
+}
+
+function parseAssignStatement(){
+	console.log("PARSER --> Parsing for Assign Statement");
+	match(["TOKEN_ID"]);
+	match(["TOKEN_ASSIGN"]);
+	parseExpr();
+}
+
+function parseVarDecl(){
+	console.log("PARSER --> Parsing for Variable Declaration");
+	match(["TOKEN_TYPEINT", "TOKEN_TYPEBOOLEAN", "TOKEN_TYPESTRING"]);
+	match(["TOKEN_ID"]);
+}
+
+function parseWhileStatement(){
+	console.log("PARSER --> Parsing for While Statement");
+	match(["TOKEN_WHILE"]);
+	parseBooleanExpr();
+	parseBlock();
+}
+
+function parseIfStatement(){
+	console.log("PARSER --> Parsing for If Statement");
+	match(["TOKEN_IF"]);
+	parseBooleanExpr();
+	parseBlock();
+}
+
+function match(expectedToken){
+	getToken();
+	if (expectedToken.includes(currentToken.type))
+		console.log("GREAT! got " + expectedToken + "(s)");
+	else{
+		console.log(" '%c ERROR: Received  " + currentToken.type + " instead of expected " + expectedToken , 'color:red');
+		
 	}
 }
