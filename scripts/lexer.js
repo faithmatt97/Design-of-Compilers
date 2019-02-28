@@ -4,7 +4,7 @@ Since Alan hates us and wants us to Parse before lexing the following program, I
 So here's what I'm thinking
 
 We modify the EOF token so it only registers if its the last token on the line (not really needed tbh)
-We split the source code by regex described above. Now each program is in its own array
+We split the source code by regex described above. Now each program is in its own array element
 After we finish lexing we call parse function.
 
 OKAY tried that and failed because I guess strings dont have multiline functionality so maybe we'll split it by \$\n
@@ -22,6 +22,14 @@ Check if everything still works with new changes - MOSTLY DONE
 		Having two assign statements in a row will cause an infinite loop. 
 		I've fixed it by putting in conditional statement to detect assign statements in the Expr block (despite assign states not being Expressions) 
 		*Have yet to see if everything else still works with new changes
+
+	UPDATE: 
+		Everything seems to be working for parse
+	WHAT'S NEXT:
+		-Construct CST (I HATE TREES bc i always study for them and never get them in interviews. >:U )
+		-Fix multiprogram functionality
+			Alan said to not make my compiler so fragile so i gotta correct that :/
+		-Add line and column report, easy peasy
 
 
 */
@@ -591,12 +599,12 @@ function LookAhead(){
 
 function parseProgram()
 {
-	console.log("PARSER --> Parsing Program");
+	console.log("PARSER --> Parsing [Program]");
 	parseBlock()
 }
 
 function parseBlock(){
-	console.log("PARSER --> Parsing Block");
+	console.log("PARSER --> Parsing for [Block]");
 	//if(checkToken().type === "TOKEN_LEFTBRACE"){
 		match(["TOKEN_LEFTBRACE"]);
 		parseStatementList();
@@ -605,7 +613,7 @@ function parseBlock(){
 }
 
 function parseStatementList(){
-	console.log("PARSER --> Parsing StatementList");
+	console.log("PARSER --> Parsing [StatementList]");
 	
 	if( (checkToken().type ==="TOKEN_LEFTBRACE") || (checkToken().type ==="TOKEN_ID") || (checkToken().type ==="TOKEN_PRINT") || (checkToken().type === "TOKEN_ASSIGN") ||(checkToken().type === "TOKEN_TYPEINT") || (checkToken().type === "TOKEN_TYPESTRING") || (checkToken().type === "TOKEN_TYPEBOOLEAN") || (checkToken().type === "TOKEN_WHILE") || (checkToken().type === "TOKEN_IF")){
 		parseStatement();
@@ -621,7 +629,7 @@ function parseStatementList(){
 }
 
 function parseStatement(){
-	console.log("PARSER --> Parsing for Statement");
+	console.log("PARSER --> Parsing for [Statement]");
 
 	if(checkToken().type === "TOKEN_PRINT")
 		parsePrintStatement();
@@ -643,7 +651,7 @@ function parseStatement(){
 }
 
 function parseExpr(){
-	console.log("PARSER --> Parsing for Expression");
+	console.log("PARSER --> Parsing for [Expr]");
 
 	if(checkToken().type === "TOKEN_DIGIT")
 		parseIntExpr();
@@ -659,10 +667,12 @@ function parseExpr(){
 		console.log("Parsing for ID")
 		match(["TOKEN_ID"])
 	}
+	else
+		console.log('%c ERROR: Expecting [Expr], but received [' +checkToken().type + "]", ' color:red')
 	
 }
 function parseIntExpr(){
-	console.log("PARSER --> Parsing for IntExpr");
+	console.log("PARSER --> Parsing for [IntExpr]");
 
 	if(checkToken().type === "TOKEN_DIGIT" && (LookAhead().type === "TOKEN_INTOP")){
 		match(["TOKEN_DIGIT"]);
@@ -677,7 +687,7 @@ function parseIntExpr(){
 }
 
 function parseStringExpr(){
-	console.log("PARSER --> Parsing for StringExpr");
+	console.log("PARSER --> Parsing for [StringExpr]");
 
 	match(["TOKEN_QUOTE"]);
 	parseCharList();
@@ -686,7 +696,7 @@ function parseStringExpr(){
 
 function parseBooleanExpr(){
 
-	console.log("PARSER --> Parsing for BooleanExpr");
+	console.log("PARSER --> Parsing for [BooleanExpr]");
 		if (checkToken().type === "TOKEN_LEFTPAREN"){
 			match(["TOKEN_LEFTPAREN"])
 			parseExpr();
@@ -701,7 +711,7 @@ function parseBooleanExpr(){
 }
 
 function parseCharList(){
-	console.log("PARSER --> Parsing for Charlist");
+	console.log("PARSER --> Parsing for [Charlist]");
 	if(checkToken().type === "TOKEN_CHAR"){
 		match(["TOKEN_CHAR"]);
 		parseCharList();
@@ -718,7 +728,7 @@ function parseCharList(){
 }
 
 function parsePrintStatement(){
-	console.log("PARSER --> Parsing for Print Statement");
+	console.log("PARSER --> Parsing for [Print Statement]");
 	match(["TOKEN_PRINT"]);
 	match(["TOKEN_LEFTPAREN"]);
 	parseExpr();
@@ -726,27 +736,27 @@ function parsePrintStatement(){
 }
 
 function parseAssignStatement(){
-	console.log("PARSER --> Parsing for Assign Statement");
+	console.log("PARSER --> Parsing for [Assign Statement]");
 	match(["TOKEN_ID"]);
 	match(["TOKEN_ASSIGN"]);
 	parseExpr();
 }
 
 function parseVarDecl(){
-	console.log("PARSER --> Parsing for Variable Declaration");
+	console.log("PARSER --> Parsing for [Variable Declaration]");
 	match(["TOKEN_TYPEINT", "TOKEN_TYPEBOOLEAN", "TOKEN_TYPESTRING"]);
 	match(["TOKEN_ID"]);
 }
 
 function parseWhileStatement(){
-	console.log("PARSER --> Parsing for While Statement");
+	console.log("PARSER --> Parsing for [While Statement]");
 	match(["TOKEN_WHILE"]);
 	parseBooleanExpr();
 	parseBlock();
 }
 
 function parseIfStatement(){
-	console.log("PARSER --> Parsing for If Statement");
+	console.log("PARSER --> Parsing for [If Statement]");
 	match(["TOKEN_IF"]);
 	parseBooleanExpr();
 	parseBlock();
@@ -754,10 +764,14 @@ function parseIfStatement(){
 
 function match(expectedToken){
 	getToken();
+	console.log("PARSER--> Expecting one of the following [" + expectedToken + "]")
 	if (expectedToken.includes(currentToken.type))
-		console.log("GREAT! got " + expectedToken + "(s)");
+		console.log("PARSER --> GREAT! got [" + expectedToken + "] (s) as expected");
 	else{
-		console.log(" '%c ERROR: Received  " + currentToken.type + " instead of expected " + expectedToken , 'color:red');
+		console.log(" '%c ERROR: Received  [" + currentToken.type + "] instead of expected [" + expectedToken + "]", 'color:red');
 		
 	}
 }
+
+
+
