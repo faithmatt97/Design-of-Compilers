@@ -17,7 +17,14 @@ Check if everything still works with new changes - MOSTLY DONE
 
 */
 
+/*
+	Bugs I've found:
+		Having two assign statements in a row will cause an infinite loop. 
+		I've fixed it by putting in conditional statement to detect assign statements in the Expr block (despite assign states not being Expressions) 
+		*Have yet to see if everything else still works with new changes
 
+
+*/
 
  var tokens = [];
 var tokenIndex = 0;
@@ -551,12 +558,7 @@ var programs
 				ok =checkToken();
 				console.log(ok)
 				
-				if(checkToken().type === "TOKEN_LEFTBRACE"){
-					console.log("IT WORKS");
-				}
-				else{
-					console.log("IT DOESNT WORK");
-				}
+				
 
 				parseProgram();
 
@@ -605,9 +607,9 @@ function parseBlock(){
 function parseStatementList(){
 	console.log("PARSER --> Parsing StatementList");
 	
-	if( (checkToken().type ==="TOKEN_PRINT") || (checkToken().type === "TOKEN_ASSIGN") ||(checkToken().type === "TOKEN_TYPEINT") || (checkToken().type === "TOKEN_WHILE") || (checkToken().type === "TOKEN_IF")){
+	if( (checkToken().type ==="TOKEN_LEFTBRACE") || (checkToken().type ==="TOKEN_ID") || (checkToken().type ==="TOKEN_PRINT") || (checkToken().type === "TOKEN_ASSIGN") ||(checkToken().type === "TOKEN_TYPEINT") || (checkToken().type === "TOKEN_TYPESTRING") || (checkToken().type === "TOKEN_TYPEBOOLEAN") || (checkToken().type === "TOKEN_WHILE") || (checkToken().type === "TOKEN_IF")){
 		parseStatement();
-		//parseStatementList()
+		parseStatementList()
 	}
 
 	else{
@@ -624,7 +626,7 @@ function parseStatement(){
 	if(checkToken().type === "TOKEN_PRINT")
 		parsePrintStatement();
 	
-	else if(checkToken().type === "TOKEN_ASSIGN")
+	else if(checkToken().type === "TOKEN_ID" && (LookAhead().type === "TOKEN_ASSIGN"))
 		parseAssignStatement();
 	
 	else if( (checkToken().type === "TOKEN_TYPEINT") || (checkToken().type === "TOKEN_TYPEBOOLEAN") || (checkToken().type === "TOKEN_TYPESTRING"))
@@ -636,7 +638,7 @@ function parseStatement(){
 	else if (checkToken().type === "TOKEN_IF")
 		parseIfStatement();
 
-	else
+	else if(checkToken().type ==="TOKEN_LEFTBRACE")
 		parseBlock();
 }
 
@@ -645,13 +647,17 @@ function parseExpr(){
 
 	if(checkToken().type === "TOKEN_DIGIT")
 		parseIntExpr();
-	 if (checkToken().type ==="TOKEN_QUOTE")
+	else if (checkToken().type ==="TOKEN_QUOTE")
 		parseStringExpr();
 	else if ( (checkToken().type === "TOKEN_LEFTPAREN") || (checkToken().type === "TOKEN_BOOLFALSE") || (checkToken().type === "TOKEN_BOOLTRUE"))
 		parseBooleanExpr();
-	else if(checkToken().type ==="TOKEN_ID"){
+	else if(checkToken().type ==="TOKEN_ID" && (LookAhead().type ==="TOKEN_ASSIGN")){
 		console.log("Parsing for ID")
-		match(["TOKEN_ID"]);
+		parseAssignStatement();
+	}
+	else if (checkToken().type ==="TOKEN_ID") {
+		console.log("Parsing for ID")
+		match(["TOKEN_ID"])
 	}
 	
 }
