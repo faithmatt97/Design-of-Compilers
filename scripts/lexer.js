@@ -591,7 +591,7 @@ var programs
                
             
 				lexPtr = 0;
-				line++;
+				//line++; //this was causing faulty line count
 				column = 0;
 				programTokens = tokenArray;
 				//console.log(tokenArray);
