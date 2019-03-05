@@ -614,6 +614,8 @@ var programs
 
     }
 
+  var cst;
+
 function checkErrors(){
 	if(parseErrors > 1)
 		return true;; 
@@ -634,8 +636,8 @@ function LookAhead(){
 }
 
 function parseProgram(){
-var cst = new Tree();
-cst.addBranchNode("Root", "Branch");
+ cst = new Tree();
+cst.addNode("Root" + i, "Branch");
 
 	if(parseErrors > 0){
 		console.log("PARSER ENCOUNTERED ERROR SO IT STOPPED")
@@ -645,8 +647,8 @@ cst.addBranchNode("Root", "Branch");
 	console.log("PARSER --> Parsing [Program]");
 	parseBlock()
 	console.log("PARSER FINISHED")
-	plis = JSON.stringify(cst);
-	console.log(plis);
+	cst.endChildren();
+    console.log(cst.toString())
 	}
 
 }
@@ -656,12 +658,16 @@ function parseBlock(){
 		console.log("PARSER ENCOUNTERED ERROR SO IT STOPPED")
 		return;
 	} 
+
+	else{
+		cst.addNode("Block", "branch")
 	console.log("PARSER --> Parsing for [Block]");
 	//if(checkToken().type === "TOKEN_LEFTBRACE"){
 		match(["TOKEN_LEFTBRACE"]);
 		parseStatementList();
 		match(["TOKEN_RIGHTBRACE"])
-	//}
+		cst.endChildren();
+	}
 }
 
 function parseStatementList(){
@@ -673,19 +679,21 @@ function parseStatementList(){
 	}
 
 	else {
+		cst.addNode("StatementList", "branch")
 
 		console.log("PARSER --> Parsing [StatementList]");
 	
 		if( (checkToken().type ==="TOKEN_LEFTBRACE") || (checkToken().type ==="TOKEN_ID") && (LookAhead().type === "TOKEN_ASSIGN") || (checkToken().type ==="TOKEN_PRINT") || (checkToken().type === "TOKEN_ASSIGN") ||(checkToken().type === "TOKEN_TYPEINT") || (checkToken().type === "TOKEN_TYPESTRING") || (checkToken().type === "TOKEN_TYPEBOOLEAN") || (checkToken().type === "TOKEN_WHILE") || (checkToken().type === "TOKEN_IF")){
 			parseStatement();
 			parseStatementList()
+            
 		}
 
 	else{
 		console.log("Received Epsilon ");
 	}
 
-	
+	cst.endChildren()
 }
 }
 
@@ -698,6 +706,7 @@ function parseStatement(){
 	}
 	else
 	{
+		cst.addNode("Statement", "branch")
 		console.log("PARSER --> Parsing for [Statement]");
 
 		if(checkToken().type === "TOKEN_PRINT")
@@ -722,6 +731,7 @@ function parseStatement(){
 			console.log("ERROR ERROT ERROR")
 		}
 
+        cst.endChildren()
 	}
 }
 
@@ -736,6 +746,7 @@ function parseExpr(){
 
 	else
 	{
+		cst.addNode("Expr", "branch")
 		console.log("PARSER --> Parsing for [Expr]");
 
 		if(checkToken().type === "TOKEN_DIGIT")
@@ -749,11 +760,15 @@ function parseExpr(){
 			parseAssignStatement();
 		}
 		else if (checkToken().type ==="TOKEN_ID") {
+            cst.addNode("ID", "branch");
 			console.log("Parsing for ID")
 			match(["TOKEN_ID"])
+            cst.endChildren();
 		}
 		else
 			console.log('%c ERROR: Expecting [Expr], but received [' +checkToken().type + "]", ' color:red')
+
+        cst.endChildren()
 	}
 	
 }
@@ -765,7 +780,9 @@ function parseIntExpr(){
 	}
 
 	else 
-	{
+	{	
+
+		cst.addNode("IntExpr", "branch")
 		console.log("PARSER --> Parsing for [IntExpr]");
 
 		if(checkToken().type === "TOKEN_DIGIT" && (LookAhead().type === "TOKEN_INTOP")){
@@ -776,6 +793,8 @@ function parseIntExpr(){
 
 		else 
 			match(["TOKEN_DIGIT"]);
+
+        cst.endChildren()
 
 	}
 }
@@ -792,10 +811,13 @@ function parseStringExpr(){
 
 	else
 	{
+		cst.addNode("StringExpr", "branch")
 		console.log("PARSER --> Parsing for [StringExpr]");
 		match(["TOKEN_QUOTE"]);
 		parseCharList();
 		match(["TOKEN_QUOTE"]);
+		
+        cst.endChildren();
 	}
 }
 
@@ -809,7 +831,7 @@ function parseBooleanExpr(){
 
 	else
 	{
-
+            cst.addNode("BooleanExpr", "branch")
 		console.log("PARSER --> Parsing for [BooleanExpr]");
 			if (checkToken().type === "TOKEN_LEFTPAREN"){
 				match(["TOKEN_LEFTPAREN"])
@@ -821,6 +843,8 @@ function parseBooleanExpr(){
 
 			else
 				match(["TOKEN_BOOLFALSE", "TOKEN_BOOLTRUE"]);
+
+            cst.endChildren()
 	}
 
 }
@@ -833,7 +857,8 @@ function parseCharList(){
 	}
 
 	else 
-	{
+	{   
+        cst.addNode("Charlist", "branch")
 		console.log("PARSER --> Parsing for [Charlist]");
 		if(checkToken().type === "TOKEN_CHAR"){
 			match(["TOKEN_CHAR"]);
@@ -848,6 +873,7 @@ function parseCharList(){
 		else {
 
 		}
+        cst.endChildren()
 	}
 }
 
@@ -860,11 +886,13 @@ function parsePrintStatement(){
 
 	else 
 	{
+        cst.addNode("Print", "branch")
 		console.log("PARSER --> Parsing for [Print Statement]");
 		match(["TOKEN_PRINT"]);
 		match(["TOKEN_LEFTPAREN"]);
 		parseExpr();
 		match(["TOKEN_RIGHTPAREN"]);
+        cst.endChildren()
 	}
 }
 
@@ -876,11 +904,13 @@ function parseAssignStatement(){
 	}
 
 	else 
-	{
+	{     
+        cst.addNode("Assign", "branch")
 		console.log("PARSER --> Parsing for [Assign Statement]");
 		match(["TOKEN_ID"]);
 		match(["TOKEN_ASSIGN"]);
 		parseExpr();
+        cst.endChildren()
 	}
 }
 
@@ -893,9 +923,11 @@ function parseVarDecl(){
 
 	else
 	{
+        cst.addNode("VarDecl", "branch")
 		console.log("PARSER --> Parsing for [Variable Declaration]");
 		match(["TOKEN_TYPEINT", "TOKEN_TYPEBOOLEAN", "TOKEN_TYPESTRING"]);
 		match(["TOKEN_ID"]);
+        cst.endChildren()
 	}
 }
 
@@ -908,10 +940,12 @@ function parseWhileStatement(){
 
 	else
 	{
+        cst.addNode("While", "branch")
 		console.log("PARSER --> Parsing for [While Statement]");
 		match(["TOKEN_WHILE"]);
 		parseBooleanExpr();
 		parseBlock();
+        cst.endChildren()
 	}
 }
 
@@ -924,10 +958,12 @@ function parseIfStatement(){
 
 	else
 	{
+        cst.addNode("If", "branch")
 		console.log("PARSER --> Parsing for [If Statement]");
 		match(["TOKEN_IF"]);
 		parseBooleanExpr();
 		parseBlock();
+        cst.endChildren()
 	}
 }
 
@@ -943,8 +979,10 @@ function match(expectedToken){
 	else
 	{
 		console.log("PARSER--> Expecting one of the following [" + expectedToken + "]")
-		if (expectedToken.includes(currentToken.type))
+		if (expectedToken.includes(currentToken.type)){
 			console.log("PARSER --> GREAT! got [" + expectedToken + "] (s) as expected");
+			cst.addNode(currentToken.value, "leaf");
+		}
 		else
 		{
 			console.log(" '%c ERROR: Received  [" + currentToken.type + "] instead of expected [" + expectedToken + "]", 'color:red');
@@ -958,7 +996,7 @@ function match(expectedToken){
 function Tree(){
 	this.root = null;
 	this.current ={};
-	this.addBranchNode = function(name, branchType){
+	this.addNode = function(name, branchType){
 		var node = {
 			name: name,
 			parent: {},
@@ -969,6 +1007,7 @@ function Tree(){
 
 		if((this.root ==null) || (!this.root)){
 			this.root=node;
+            this.current = node;
 		}
 		else{
 			node.parent = this.current;
@@ -978,8 +1017,56 @@ function Tree(){
 
 		if (branchType == "branch") {
           
-            this.cur = node;
+            this.current = node;
         }
 }
+
+
+		this.endChildren = function() {
+        if ((this.current.parent !== null) && (this.current.parent.name !== undefined)) {
+            this.current = this.current.parent;
+        } 
+		else {
+            
+        }
+    };
+
+            this.toString = function() {
+        // Initialize the result string.
+        var traversalResult = "";
+
+        // Recursive function to handle the expansion of the nodes.
+        function expand(node, depth)
+        {
+            // Space out based on the current depth so
+            // this looks at least a little tree-like.
+            for (var i = 0; i < depth; i++)
+            {
+                traversalResult += "-";
+            }
+
+            // If there are no children (i.e., leaf nodes)...
+            if (!node.children || node.children.length === 0)
+            {
+                // ... note the leaf node.
+                traversalResult += "[" + node.name + "]";
+                traversalResult += "\n";
+            }
+            else
+            {
+                // There are children, so note these interior/branch nodes and ...
+                traversalResult += "<" + node.name + "> \n";
+                // .. recursively expand them.
+                for (var i = 0; i < node.children.length; i++)
+                {
+                    expand(node.children[i], depth + 1);
+                }
+            }
+        }
+        // Make the initial call to expand from the root.
+        expand(this.root, 0);
+        // Return the result.
+        return traversalResult;
+    };
 	
 }
