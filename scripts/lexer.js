@@ -137,7 +137,7 @@ var programs
       //programs = codeBody.split('\$(?=\n)');
         //console.log(codeBody)
         //console.log(programs)
-        console.log(programs[programs.length-1].charAt(programs[programs.length-1].length-1))
+       // console.log(programs[programs.length-1].charAt(programs[programs.length-1].length-1))
         
         
     }
@@ -167,7 +167,40 @@ var programs
         	document.getElementById("taSourceCode").value+="$";
         	}
 
+        var go;
+        var ptr =0;
+        var counter = 0;
+        	
+        	//console.log(code)
+        while (ptr<code.length){
+        	if(inQuotes){
+        			if(regQuote.test(code.charAt(ptr)))
+                                    inQuotes = false;
+                   //else if(regEOF.test(code.charAt(ptr)))
 
+        	}
+        	else if(regEOF.test(code.charAt(ptr))){
+            	
+            	one = code.slice(0,ptr)
+            	two = code.slice(ptr, code.length)
+
+            	code = one + '\n' + two;
+            	ptr++;   
+            	counter++;
+        	}
+        	else if(regQuote.test(code.charAt(ptr))){
+                inQuotes = true;
+            }
+            
+        	ptr++;
+        }
+
+      console.log(code)
+      putMessage(code)
+      programs = code.split('\n\$');
+      programs.pop();
+     //bitch = programs.splice('\$\n');
+      console.log(programs)
      for(i =0; i<programs.length ; i++){
      		putMessage("LEXING PROGRAM #"+ i);
      		errorInCurrentProgram = false;
@@ -564,10 +597,10 @@ var programs
 				//console.log(tokenArray);
 				tokenArray = [];
 				ok =checkToken();
-				console.log(ok)
+				//console.log(ok);
+				console.log(counter);
+				parseErrors = errors;
 				
-				
-
 				parseProgram();
 
 				//console.log(match(["TOKEN_LEFTBRACE	"]))
@@ -575,13 +608,16 @@ var programs
 
 
             }
-            putMessage("FINISHED LEXING ALL PROGRAMS");
+            putMessage("COMPILATION FINISHED");
 
            
 
     }
 
-
+function checkErrors(){
+	if(parseErrors > 1)
+		return true;; 
+}
 
     // I dont know what the fuck is going on. good luck. 
 function getToken(){
@@ -597,13 +633,29 @@ function LookAhead(){
 	return programTokens[1];
 }
 
-function parseProgram()
-{
+function parseProgram(){
+var cst = new Tree();
+cst.addBranchNode("Root", "Branch");
+
+	if(parseErrors > 0){
+		console.log("PARSER ENCOUNTERED ERROR SO IT STOPPED")
+		return;
+	}
+	else{
 	console.log("PARSER --> Parsing [Program]");
 	parseBlock()
+	console.log("PARSER FINISHED")
+	plis = JSON.stringify(cst);
+	console.log(plis);
+	}
+
 }
 
 function parseBlock(){
+	if(parseErrors > 1){
+		console.log("PARSER ENCOUNTERED ERROR SO IT STOPPED")
+		return;
+	} 
 	console.log("PARSER --> Parsing for [Block]");
 	//if(checkToken().type === "TOKEN_LEFTBRACE"){
 		match(["TOKEN_LEFTBRACE"]);
@@ -613,165 +665,321 @@ function parseBlock(){
 }
 
 function parseStatementList(){
-	console.log("PARSER --> Parsing [StatementList]");
-	
-	if( (checkToken().type ==="TOKEN_LEFTBRACE") || (checkToken().type ==="TOKEN_ID") || (checkToken().type ==="TOKEN_PRINT") || (checkToken().type === "TOKEN_ASSIGN") ||(checkToken().type === "TOKEN_TYPEINT") || (checkToken().type === "TOKEN_TYPESTRING") || (checkToken().type === "TOKEN_TYPEBOOLEAN") || (checkToken().type === "TOKEN_WHILE") || (checkToken().type === "TOKEN_IF")){
-		parseStatement();
-		parseStatementList()
+
+	if(parseErrors > 0)
+	{
+		console.log("PARSER ENCOUNTERED ERROR SO IT STOPPED")
+		return;
 	}
+
+	else {
+
+		console.log("PARSER --> Parsing [StatementList]");
+	
+		if( (checkToken().type ==="TOKEN_LEFTBRACE") || (checkToken().type ==="TOKEN_ID") && (LookAhead().type === "TOKEN_ASSIGN") || (checkToken().type ==="TOKEN_PRINT") || (checkToken().type === "TOKEN_ASSIGN") ||(checkToken().type === "TOKEN_TYPEINT") || (checkToken().type === "TOKEN_TYPESTRING") || (checkToken().type === "TOKEN_TYPEBOOLEAN") || (checkToken().type === "TOKEN_WHILE") || (checkToken().type === "TOKEN_IF")){
+			parseStatement();
+			parseStatementList()
+		}
 
 	else{
 		console.log("Received Epsilon ");
 	}
 
 	
-
+}
 }
 
 function parseStatement(){
-	console.log("PARSER --> Parsing for [Statement]");
 
-	if(checkToken().type === "TOKEN_PRINT")
-		parsePrintStatement();
-	
-	else if(checkToken().type === "TOKEN_ID" && (LookAhead().type === "TOKEN_ASSIGN"))
-		parseAssignStatement();
-	
-	else if( (checkToken().type === "TOKEN_TYPEINT") || (checkToken().type === "TOKEN_TYPEBOOLEAN") || (checkToken().type === "TOKEN_TYPESTRING"))
-		parseVarDecl();
-	
-	else if(checkToken().type === "TOKEN_WHILE")
-		parseWhileStatement();
+	if(parseErrors > 0)
+	{
+		console.log("PARSER ENCOUNTERED ERROR SO IT STOPPED")
+		return;
+	}
+	else
+	{
+		console.log("PARSER --> Parsing for [Statement]");
 
-	else if (checkToken().type === "TOKEN_IF")
-		parseIfStatement();
+		if(checkToken().type === "TOKEN_PRINT")
+			parsePrintStatement();
+	
+		else if(checkToken().type === "TOKEN_ID" && (LookAhead().type === "TOKEN_ASSIGN"))
+			parseAssignStatement();
+		
+		else if( (checkToken().type === "TOKEN_TYPEINT") || (checkToken().type === "TOKEN_TYPEBOOLEAN") || (checkToken().type === "TOKEN_TYPESTRING"))
+			parseVarDecl();
+	
+		else if(checkToken().type === "TOKEN_WHILE")
+			parseWhileStatement();
 
-	else if(checkToken().type ==="TOKEN_LEFTBRACE")
-		parseBlock();
+		else if (checkToken().type === "TOKEN_IF")
+			parseIfStatement();
+
+		else if(checkToken().type ==="TOKEN_LEFTBRACE")
+			parseBlock();
+
+		else{
+			console.log("ERROR ERROT ERROR")
+		}
+
+	}
 }
 
 function parseExpr(){
-	console.log("PARSER --> Parsing for [Expr]");
 
-	if(checkToken().type === "TOKEN_DIGIT")
-		parseIntExpr();
-	else if (checkToken().type ==="TOKEN_QUOTE")
-		parseStringExpr();
-	else if ( (checkToken().type === "TOKEN_LEFTPAREN") || (checkToken().type === "TOKEN_BOOLFALSE") || (checkToken().type === "TOKEN_BOOLTRUE"))
-		parseBooleanExpr();
-	else if(checkToken().type ==="TOKEN_ID" && (LookAhead().type ==="TOKEN_ASSIGN")){
-		console.log("Parsing for ID")
-		parseAssignStatement();
+
+	if(parseErrors > 0)
+	{
+		console.log("PARSER ENCOUNTERED ERROR SO IT STOPPED")
+		return;
 	}
-	else if (checkToken().type ==="TOKEN_ID") {
-		console.log("Parsing for ID")
-		match(["TOKEN_ID"])
-	}
+
 	else
-		console.log('%c ERROR: Expecting [Expr], but received [' +checkToken().type + "]", ' color:red')
+	{
+		console.log("PARSER --> Parsing for [Expr]");
+
+		if(checkToken().type === "TOKEN_DIGIT")
+			parseIntExpr();
+		else if (checkToken().type ==="TOKEN_QUOTE")
+			parseStringExpr();
+		else if ( (checkToken().type === "TOKEN_LEFTPAREN") || (checkToken().type === "TOKEN_BOOLFALSE") || (checkToken().type === "TOKEN_BOOLTRUE"))
+			parseBooleanExpr();
+		else if(checkToken().type ==="TOKEN_ID" && (LookAhead().type ==="TOKEN_ASSIGN")){
+			console.log("Parsing for ID")
+			parseAssignStatement();
+		}
+		else if (checkToken().type ==="TOKEN_ID") {
+			console.log("Parsing for ID")
+			match(["TOKEN_ID"])
+		}
+		else
+			console.log('%c ERROR: Expecting [Expr], but received [' +checkToken().type + "]", ' color:red')
+	}
 	
 }
 function parseIntExpr(){
-	console.log("PARSER --> Parsing for [IntExpr]");
-
-	if(checkToken().type === "TOKEN_DIGIT" && (LookAhead().type === "TOKEN_INTOP")){
-		match(["TOKEN_DIGIT"]);
-		match(["TOKEN_INTOP"]);
-		parseExpr();
+	if(parseErrors > 0)
+	{
+		console.log("PARSER ENCOUNTERED ERROR SO IT STOPPED")
+		return;
 	}
 
 	else 
-		match(["TOKEN_DIGIT"]);
+	{
+		console.log("PARSER --> Parsing for [IntExpr]");
 
-	
+		if(checkToken().type === "TOKEN_DIGIT" && (LookAhead().type === "TOKEN_INTOP")){
+			match(["TOKEN_DIGIT"]);
+			match(["TOKEN_INTOP"]);
+			parseExpr();
+		}
+
+		else 
+			match(["TOKEN_DIGIT"]);
+
+	}
 }
 
 function parseStringExpr(){
-	console.log("PARSER --> Parsing for [StringExpr]");
 
-	match(["TOKEN_QUOTE"]);
-	parseCharList();
-	match(["TOKEN_QUOTE"]);
+
+
+	if(parseErrors > 0)
+	{
+		console.log("PARSER ENCOUNTERED ERROR SO IT STOPPED")
+		return;
+	}
+
+	else
+	{
+		console.log("PARSER --> Parsing for [StringExpr]");
+		match(["TOKEN_QUOTE"]);
+		parseCharList();
+		match(["TOKEN_QUOTE"]);
+	}
 }
 
 function parseBooleanExpr(){
 
-	console.log("PARSER --> Parsing for [BooleanExpr]");
-		if (checkToken().type === "TOKEN_LEFTPAREN"){
-			match(["TOKEN_LEFTPAREN"])
-			parseExpr();
-			match(["TOKEN_ISEQUAL", "TOKEN_NOTEQUAL"]);
-			parseExpr();
-			match(["TOKEN_RIGHTPAREN"]);
-		}
+	if(parseErrors > 0)
+	{
+		console.log("PARSER ENCOUNTERED ERROR SO IT STOPPED")
+		return;
+	}
 
-		else
-			match(["TOKEN_BOOLFALSE", "TOKEN_BOOLTRUE"]);
+	else
+	{
+
+		console.log("PARSER --> Parsing for [BooleanExpr]");
+			if (checkToken().type === "TOKEN_LEFTPAREN"){
+				match(["TOKEN_LEFTPAREN"])
+				parseExpr();
+				match(["TOKEN_ISEQUAL", "TOKEN_NOTEQUAL"]);
+				parseExpr();
+				match(["TOKEN_RIGHTPAREN"]);
+			}
+
+			else
+				match(["TOKEN_BOOLFALSE", "TOKEN_BOOLTRUE"]);
+	}
 
 }
 
 function parseCharList(){
-	console.log("PARSER --> Parsing for [Charlist]");
-	if(checkToken().type === "TOKEN_CHAR"){
-		match(["TOKEN_CHAR"]);
-		parseCharList();
+
+	if(parseErrors > 0){
+		console.log("PARSER ENCOUNTERED ERROR SO IT STOPPED")
+		return;
 	}
 
-	else if(checkToken().type === "TOKEN_SPACE"){
-		match(["TOKEN_SPACE"]);
-		parseCharList();
-	}
+	else 
+	{
+		console.log("PARSER --> Parsing for [Charlist]");
+		if(checkToken().type === "TOKEN_CHAR"){
+			match(["TOKEN_CHAR"]);
+			parseCharList();
+		}
 
-	else {
+		else if(checkToken().type === "TOKEN_SPACE"){
+			match(["TOKEN_SPACE"]);
+			parseCharList();
+		}
 
+		else {
+
+		}
 	}
 }
 
 function parsePrintStatement(){
-	console.log("PARSER --> Parsing for [Print Statement]");
-	match(["TOKEN_PRINT"]);
-	match(["TOKEN_LEFTPAREN"]);
-	parseExpr();
-	match(["TOKEN_RIGHTPAREN"]);
+	if(parseErrors > 0)
+	{
+		console.log("PARSER ENCOUNTERED ERROR SO IT STOPPED")
+		return;
+	}
+
+	else 
+	{
+		console.log("PARSER --> Parsing for [Print Statement]");
+		match(["TOKEN_PRINT"]);
+		match(["TOKEN_LEFTPAREN"]);
+		parseExpr();
+		match(["TOKEN_RIGHTPAREN"]);
+	}
 }
 
 function parseAssignStatement(){
-	console.log("PARSER --> Parsing for [Assign Statement]");
-	match(["TOKEN_ID"]);
-	match(["TOKEN_ASSIGN"]);
-	parseExpr();
+	if(parseErrors > 0)
+	{
+		console.log("PARSER ENCOUNTERED ERROR SO IT STOPPED")
+		return;
+	}
+
+	else 
+	{
+		console.log("PARSER --> Parsing for [Assign Statement]");
+		match(["TOKEN_ID"]);
+		match(["TOKEN_ASSIGN"]);
+		parseExpr();
+	}
 }
 
 function parseVarDecl(){
-	console.log("PARSER --> Parsing for [Variable Declaration]");
-	match(["TOKEN_TYPEINT", "TOKEN_TYPEBOOLEAN", "TOKEN_TYPESTRING"]);
-	match(["TOKEN_ID"]);
+	if(parseErrors > 0)
+	{
+		console.log("PARSER ENCOUNTERED ERROR SO IT STOPPED")
+		return;
+	}
+
+	else
+	{
+		console.log("PARSER --> Parsing for [Variable Declaration]");
+		match(["TOKEN_TYPEINT", "TOKEN_TYPEBOOLEAN", "TOKEN_TYPESTRING"]);
+		match(["TOKEN_ID"]);
+	}
 }
 
 function parseWhileStatement(){
-	console.log("PARSER --> Parsing for [While Statement]");
-	match(["TOKEN_WHILE"]);
-	parseBooleanExpr();
-	parseBlock();
+
+	if(parseErrors > 0){
+		console.log("PARSER ENCOUNTERED ERROR SO IT STOPPED")
+		return;
+	}
+
+	else
+	{
+		console.log("PARSER --> Parsing for [While Statement]");
+		match(["TOKEN_WHILE"]);
+		parseBooleanExpr();
+		parseBlock();
+	}
 }
 
 function parseIfStatement(){
-	console.log("PARSER --> Parsing for [If Statement]");
-	match(["TOKEN_IF"]);
-	parseBooleanExpr();
-	parseBlock();
+	if(parseErrors > 0)
+	{
+		console.log("PARSER ENCOUNTERED ERROR SO IT STOPPED")
+		return;
+	}
+
+	else
+	{
+		console.log("PARSER --> Parsing for [If Statement]");
+		match(["TOKEN_IF"]);
+		parseBooleanExpr();
+		parseBlock();
+	}
 }
 
 function match(expectedToken){
 	getToken();
-	console.log("PARSER--> Expecting one of the following [" + expectedToken + "]")
-	if (expectedToken.includes(currentToken.type))
-		console.log("PARSER --> GREAT! got [" + expectedToken + "] (s) as expected");
-	else{
-		console.log(" '%c ERROR: Received  [" + currentToken.type + "] instead of expected [" + expectedToken + "]", 'color:red');
+
+
+	if(parseErrors > 0)
+	{
+		//console.log("PARSER ENCOUNTERED ERROR SO IT STOPPED")
+		return;
+	}
+	else
+	{
+		console.log("PARSER--> Expecting one of the following [" + expectedToken + "]")
+		if (expectedToken.includes(currentToken.type))
+			console.log("PARSER --> GREAT! got [" + expectedToken + "] (s) as expected");
+		else
+		{
+			console.log(" '%c ERROR: Received  [" + currentToken.type + "] instead of expected [" + expectedToken + "]", 'color:red');
+			parseErrors++;
 		
+		}
 	}
 }
 
 
+function Tree(){
+	this.root = null;
+	this.current ={};
+	this.addBranchNode = function(name, branchType){
+		var node = {
+			name: name,
+			parent: {},
+			children:  [] 
 
+
+		}
+
+		if((this.root ==null) || (!this.root)){
+			this.root=node;
+		}
+		else{
+			node.parent = this.current;
+			this.current.children.push(node);
+			
+		}
+
+		if (branchType == "branch") {
+          
+            this.cur = node;
+        }
+}
+	
+}
