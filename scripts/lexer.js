@@ -598,7 +598,7 @@ var programs
 				tokenArray = [];
 				ok =checkToken();
 				//console.log(ok);
-				console.log(counter);
+				
 				parseErrors = errors;
 				
 				parseProgram();
@@ -637,25 +637,33 @@ function LookAhead(){
 
 function parseProgram(){
  cst = new Tree();
+ console.log("\n PARSING PROGRAM " + i)
 cst.addNode("Program" + i, "Branch");
 
-	if(parseErrors > 0){
+	if(parseErrors > 0)
+	{
 		console.log("PARSER ENCOUNTERED ERROR SO IT STOPPED")
 		return;
 	}
-	else{
-	console.log("PARSER --> Parsing [Program]");
-	parseBlock()
-	console.log("PARSER FINISHED")
+
+	else
+	{
+		console.log("PARSER --> Parsing [Program]");
+		parseBlock()
+
+		if(parseErrors >0)
+			console.log("PARSER STOPPED DUE TO ERROR")
+		else if(parseErrors ==0)
+			console.log("PARSER FINISHED")
 	//cst.endChildren();
-    console.log(cst.toString())
+    //console.log(cst.toString())
     //putMessage(cst.toString());
 	}
 
 }
 
 function parseBlock(){
-	if(parseErrors > 1){
+	if(parseErrors > 0){
 		console.log("PARSER ENCOUNTERED ERROR SO IT STOPPED")
 		return;
 	} 
@@ -675,7 +683,7 @@ function parseStatementList(){
 
 	if(parseErrors > 0)
 	{
-		console.log("PARSER ENCOUNTERED ERROR SO IT STOPPED")
+		//console.log("PARSER ENCOUNTERED ERROR SO IT STOPPED")
 		return;
 	}
 
@@ -732,6 +740,7 @@ function parseStatement(){
 
 		else{
 			console.log("ERROR ERROT ERROR")
+			parseErrors++;
 		}
 
         cst.endChildren()
@@ -763,15 +772,20 @@ function parseExpr(){
 			console.log("Parsing for ID")
 			parseAssignStatement();
 		}
+
 		else if (checkToken().type ==="TOKEN_ID") {
             cst.addNode("ID", "branch");
 			console.log("Parsing for ID")
 			match(["TOKEN_ID"])
             cst.endChildren();
 		}
-		else
-			console.log('%c ERROR: Expecting [Expr], but received [' +checkToken().type + "]", ' color:red')
 
+		else
+		{
+			console.log('%c ERROR: Expecting [Expr], but received [' + checkToken().type + "]", ' color:red')
+			parseErrors++;
+			return;
+		}
         cst.endChildren()
 	}
 	
@@ -1026,7 +1040,7 @@ function match(expectedToken){
 		}
 		else
 		{
-			console.log(" '%c ERROR: Received  [" + currentToken.type + "] instead of expected [" + expectedToken + "] on line:" + currentToken.line + " column:" + currentToken.colNumber, 'color:red');
+			console.log("%c ERROR: Received  [" + currentToken.type + "] instead of expected [" + expectedToken + "] on line:" + currentToken.line + " column:" + currentToken.colNumber, 'color:red');
 			parseErrors++;
 		
 		}
