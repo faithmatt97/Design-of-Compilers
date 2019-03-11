@@ -1,64 +1,72 @@
+//var cst 
+cst.addNode("Root", "branch")
+
 function checkErrors(){
 	if(parseErrors > 1)
 		return true;; 
 }
 
-    // I dont know what the fuck is going on. good luck. 
-function getToken(){
+function getToken(){   //consumes next token
 	currentToken = programTokens.shift()
-	//console.log(currentToken);
 }
 
-function checkToken(){
+function checkToken(){  //checks next token
 	return programTokens[0];
 }
 
-function LookAhead(){
+function LookAhead(){ //checks 2 tokens ahead
 	return programTokens[1];
 }
 
-function parseProgram(){
- cst = new Tree();
- console.log("\n PARSING PROGRAM " + i)
-cst.addNode("Program" + i, "Branch");
+function parseProgram(){  //Everything from here on out is self explanatory 
+ 	    
+	console.log("\n PARSING PROGRAM " + i)
+	
 
-	if(parseErrors > 0)
+	if(parseErrors > 0)     // If we encounter error, stop program
 	{
 		console.log("PARSER ENCOUNTERED ERROR SO IT STOPPED")
 		return;
 	}
 
-	else
+	else                   // else continue parsing 
 	{
+		cst.addNode("Program " + i, "branch");
 		console.log("PARSER --> Parsing [Program]");
 		parseBlock()
+		cst.endChildren();
 
 		if(parseErrors >0)
 			console.log("PARSER STOPPED DUE TO ERROR")
 		else if(parseErrors ==0)
 			console.log("PARSER FINISHED")
-	//cst.endChildren();
-    console.log(cst.toString())
-    //putMessage(cst.toString());
 	}
 
 }
 
 function parseBlock(){
-	if(parseErrors > 0){
+	if(parseErrors > 0)
+	{
 		console.log("PARSER ENCOUNTERED ERROR SO IT STOPPED")
 		return;
 	} 
 
 	else{
 		cst.addNode("Block", "branch")
-	console.log("PARSER --> Parsing for [Block]");
-	//if(checkToken().type === "TOKEN_LEFTBRACE"){
+		
+		console.log("PARSER --> Parsing for [Block]");
 		match(["TOKEN_LEFTBRACE"]);
+		
 		parseStatementList();
 		match(["TOKEN_RIGHTBRACE"])
 		cst.endChildren();
+		cst.addNode("$")
+		cst.endChildren();
+		
+
 	}
+	//cst.endChildren();
+	
 }
 
 function parseStatementList(){
@@ -69,7 +77,8 @@ function parseStatementList(){
 		return;
 	}
 
-	else {
+	else 
+	{
 		//cst.addNode("StatementList", "branch")
 
 		console.log("PARSER --> Parsing [StatementList]");
@@ -77,17 +86,19 @@ function parseStatementList(){
 		if( (checkToken().type ==="TOKEN_LEFTBRACE") || (checkToken().type ==="TOKEN_ID") && (LookAhead().type === "TOKEN_ASSIGN") || (checkToken().type ==="TOKEN_PRINT") || (checkToken().type === "TOKEN_ASSIGN") ||(checkToken().type === "TOKEN_TYPEINT") || (checkToken().type === "TOKEN_TYPESTRING") || (checkToken().type === "TOKEN_TYPEBOOLEAN") || (checkToken().type === "TOKEN_WHILE") || (checkToken().type === "TOKEN_IF")){
 			cst.addNode("StatementList", "branch");
             parseStatement();
-			parseStatementList()
+			parseStatementList();
+			cst.endChildren();
             
 		}
 
 	else{
 		console.log("Received Epsilon ");
+		cst.endChildren();
 	}
 
-	cst.endChildren()
-    //cst.endChildren();
-}
+	
+    
+    }
 }
 
 function parseStatement(){
@@ -196,7 +207,7 @@ function parseIntExpr(){
             cst.endChildren();
 			parseExpr();
             cst.endChildren();
-             cst.endChildren()
+             //cst.endChildren()
 		}
 
 		else {
@@ -364,8 +375,9 @@ function parseVarDecl(){
         cst.addNode("ID", "branch");
 		match(["TOKEN_ID"]);
         cst.endChildren()
+         cst.endChildren();
 	}
-    cst.endChildren();
+   
 }
 
 function parseWhileStatement(){
@@ -410,7 +422,6 @@ function match(expectedToken){
 
 	if(parseErrors > 0)
 	{
-		//console.log("PARSER ENCOUNTERED ERROR SO IT STOPPED")
 		return;
 	}
 	else
@@ -419,6 +430,7 @@ function match(expectedToken){
 		if (expectedToken.includes(currentToken.type)){
 			console.log("PARSER --> GREAT! got [" + expectedToken + "] (s) as expected");
 			cst.addNode(currentToken.value, "leaf");
+			//cst.endChildren();
 		}
 		else
 		{
