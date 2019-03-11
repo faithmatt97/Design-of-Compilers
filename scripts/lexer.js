@@ -27,7 +27,7 @@ Check if everything still works with new changes - MOSTLY DONE
 		Everything seems to be working for parse
 	WHAT'S NEXT:
 		-Construct CST (I HATE TREES bc i always study for them and never get them in interviews. >:U )
-		-Fix multiprogram functionality
+		-Fix multiprogram functionality   
 			Alan said to not make my compiler so fragile so i gotta correct that :/
 		-Add line and column report, easy peasy
 
@@ -148,7 +148,8 @@ var programs
     
    
     function parse() {
-       
+       	cst = new Tree();
+       	cst.addNode("Root", "branch")
         var errors = 0;
         var errorCount = 0;
         var commentLine
@@ -161,17 +162,14 @@ var programs
 			programs = codeBody.split('\$\n');
         	//putMessage("LEXING PROGRAM #" + programCount);
         	
-
-        //I'm too scared to get rid of errorsCount and mess something up. So it stays!
      if(codeBody.charAt(codeBody.length-1) != "$"){
         	document.getElementById("taSourceCode").value+="$";
+        	code+="$";
         	}
 
-        var go;
+       
         var ptr =0;
-        var counter = 0;
-        	
-        	//console.log(code)
+       
         while (ptr<code.length){
         	if(inQuotes){
         			if(regQuote.test(code.charAt(ptr)))
@@ -186,7 +184,7 @@ var programs
 
             	code = one + '\n' + two;
             	ptr++;   
-            	counter++;
+            	
         	}
         	else if(regQuote.test(code.charAt(ptr))){
                 inQuotes = true;
@@ -602,19 +600,21 @@ var programs
 				parseErrors = errors;
 				
 				parseProgram();
+				//cst = new Tree()
 
 				//console.log(match(["TOKEN_LEFTBRACE	"]))
 
 
 
             }
+            console.log(cst.toString())
             putMessage("COMPILATION FINISHED");
 
            
 
     }
 
-  var cst;
+  //var cst;
 
 
 
