@@ -637,7 +637,7 @@ function LookAhead(){
 
 function parseProgram(){
  cst = new Tree();
-cst.addNode("Root" + i, "Branch");
+cst.addNode("Program" + i, "Branch");
 
 	if(parseErrors > 0){
 		console.log("PARSER ENCOUNTERED ERROR SO IT STOPPED")
@@ -647,8 +647,9 @@ cst.addNode("Root" + i, "Branch");
 	console.log("PARSER --> Parsing [Program]");
 	parseBlock()
 	console.log("PARSER FINISHED")
-	cst.endChildren();
+	//cst.endChildren();
     console.log(cst.toString())
+    //putMessage(cst.toString());
 	}
 
 }
@@ -679,12 +680,13 @@ function parseStatementList(){
 	}
 
 	else {
-		cst.addNode("StatementList", "branch")
+		//cst.addNode("StatementList", "branch")
 
 		console.log("PARSER --> Parsing [StatementList]");
 	
 		if( (checkToken().type ==="TOKEN_LEFTBRACE") || (checkToken().type ==="TOKEN_ID") && (LookAhead().type === "TOKEN_ASSIGN") || (checkToken().type ==="TOKEN_PRINT") || (checkToken().type === "TOKEN_ASSIGN") ||(checkToken().type === "TOKEN_TYPEINT") || (checkToken().type === "TOKEN_TYPESTRING") || (checkToken().type === "TOKEN_TYPEBOOLEAN") || (checkToken().type === "TOKEN_WHILE") || (checkToken().type === "TOKEN_IF")){
-			parseStatement();
+			cst.addNode("StatementList", "branch");
+            parseStatement();
 			parseStatementList()
             
 		}
@@ -694,6 +696,7 @@ function parseStatementList(){
 	}
 
 	cst.endChildren()
+    //cst.endChildren();
 }
 }
 
@@ -732,6 +735,7 @@ function parseStatement(){
 		}
 
         cst.endChildren()
+
 	}
 }
 
@@ -782,19 +786,32 @@ function parseIntExpr(){
 	else 
 	{	
 
-		cst.addNode("IntExpr", "branch")
+		
 		console.log("PARSER --> Parsing for [IntExpr]");
 
 		if(checkToken().type === "TOKEN_DIGIT" && (LookAhead().type === "TOKEN_INTOP")){
+            cst.addNode("IntExpr", "branch")
+            cst.addNode("Digit" , "branch");
 			match(["TOKEN_DIGIT"]);
+            cst.endChildren();
+            cst.addNode("IntOp", "branch");
+
 			match(["TOKEN_INTOP"]);
+            cst.endChildren();
 			parseExpr();
+            cst.endChildren();
+             cst.endChildren()
 		}
 
-		else 
+		else {
+            cst.addNode("IntExpr", "branch")
+            cst.addNode("Digit" , "branch")
 			match(["TOKEN_DIGIT"]);
+            cst.endChildren();
+             cst.endChildren()
+        }
 
-        cst.endChildren()
+       
 
 	}
 }
@@ -831,20 +848,28 @@ function parseBooleanExpr(){
 
 	else
 	{
-            cst.addNode("BooleanExpr", "branch")
+           // cst.addNode("BooleanExpr", "branch")
 		console.log("PARSER --> Parsing for [BooleanExpr]");
 			if (checkToken().type === "TOKEN_LEFTPAREN"){
+                cst.addNode("BooleanExpr", "branch")
 				match(["TOKEN_LEFTPAREN"])
 				parseExpr();
+                cst.addNode("BoolOp", "branch");
 				match(["TOKEN_ISEQUAL", "TOKEN_NOTEQUAL"]);
+                cst.endChildren();
 				parseExpr();
 				match(["TOKEN_RIGHTPAREN"]);
+                 cst.endChildren()
 			}
 
-			else
+			else{
+                cst.addNode("BooleanExpr", "branch")
+                cst.addNode("BoolVal", "branch");
 				match(["TOKEN_BOOLFALSE", "TOKEN_BOOLTRUE"]);
-
-            cst.endChildren()
+                cst.endChildren();
+                 cst.endChildren()
+            }
+           
 	}
 
 }
@@ -858,22 +883,30 @@ function parseCharList(){
 
 	else 
 	{   
-        cst.addNode("Charlist", "branch")
+        
 		console.log("PARSER --> Parsing for [Charlist]");
 		if(checkToken().type === "TOKEN_CHAR"){
+            cst.addNode("Charlist", "branch")
+            cst.addNode("char", "branch")
 			match(["TOKEN_CHAR"]);
+            cst.endChildren();
+            cst.endChildren()
 			parseCharList();
 		}
 
 		else if(checkToken().type === "TOKEN_SPACE"){
+            cst.addNode("Charlist", "branch");
+            cst.addNode("Space", "branch");
 			match(["TOKEN_SPACE"]);
+            cst.endChildren();
+            cst.endChildren()
 			parseCharList();
 		}
 
 		else {
 
 		}
-        cst.endChildren()
+        //cst.endChildren()
 	}
 }
 
@@ -905,10 +938,14 @@ function parseAssignStatement(){
 
 	else 
 	{     
-        cst.addNode("Assign", "branch")
+        cst.addNode("AssignStatement", "branch");
 		console.log("PARSER --> Parsing for [Assign Statement]");
+        cst.addNode("ID" , "branch")
 		match(["TOKEN_ID"]);
+        cst.endChildren();
+       
 		match(["TOKEN_ASSIGN"]);
+        
 		parseExpr();
         cst.endChildren()
 	}
@@ -925,10 +962,14 @@ function parseVarDecl(){
 	{
         cst.addNode("VarDecl", "branch")
 		console.log("PARSER --> Parsing for [Variable Declaration]");
+        cst.addNode("Type", "branch")
 		match(["TOKEN_TYPEINT", "TOKEN_TYPEBOOLEAN", "TOKEN_TYPESTRING"]);
+        cst.endChildren();
+        cst.addNode("ID", "branch");
 		match(["TOKEN_ID"]);
         cst.endChildren()
 	}
+    cst.endChildren();
 }
 
 function parseWhileStatement(){
@@ -940,7 +981,7 @@ function parseWhileStatement(){
 
 	else
 	{
-        cst.addNode("While", "branch")
+        cst.addNode("WhileStatement", "branch")
 		console.log("PARSER --> Parsing for [While Statement]");
 		match(["TOKEN_WHILE"]);
 		parseBooleanExpr();
@@ -958,7 +999,7 @@ function parseIfStatement(){
 
 	else
 	{
-        cst.addNode("If", "branch")
+        cst.addNode("If Statement", "branch")
 		console.log("PARSER --> Parsing for [If Statement]");
 		match(["TOKEN_IF"]);
 		parseBooleanExpr();
@@ -985,7 +1026,7 @@ function match(expectedToken){
 		}
 		else
 		{
-			console.log(" '%c ERROR: Received  [" + currentToken.type + "] instead of expected [" + expectedToken + "]", 'color:red');
+			console.log(" '%c ERROR: Received  [" + currentToken.type + "] instead of expected [" + expectedToken + "] on line:" + currentToken.line + " column:" + currentToken.colNumber, 'color:red');
 			parseErrors++;
 		
 		}
