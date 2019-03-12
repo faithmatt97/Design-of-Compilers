@@ -1,6 +1,40 @@
-/* lexer.js  */
+/* lexer.js  
 
-var tokens = [];
+Since Alan hates us and wants us to Parse before lexing the following program, I must make adjustments.
+So here's what I'm thinking
+
+We modify the EOF token so it only registers if its the last token on the line (not really needed tbh)
+We split the source code by regex described above. Now each program is in its own array element
+After we finish lexing we call parse function.
+
+OKAY tried that and failed because I guess strings dont have multiline functionality so maybe we'll split it by \$\n
+
+Not pushing anything until we get lexer working with these new adjustments. gonna be a huge pain in the ass. 
+
+since we split by \n we need to track that in lines and columns - DONE
+Check if everything still works with new changes - MOSTLY DONE
+		I can't decide if I want unclosed comments to stop the entire compiler or simply pick up with next program. Right now it does the latter. 
+
+*/
+
+/*
+	Bugs I've found:
+		Having two assign statements in a row will cause an infinite loop. 
+		I've fixed it by putting in conditional statement to detect assign statements in the Expr block (despite assign states not being Expressions) 
+		*Have yet to see if everything else still works with new changes
+
+	UPDATE: 
+		Everything seems to be working for parse
+	WHAT'S NEXT:
+		-Construct CST (I HATE TREES bc i always study for them and never get them in interviews. >:U )
+		-Fix multiprogram functionality   
+			Alan said to not make my compiler so fragile so i gotta correct that :/
+		-Add line and column report, easy peasy
+
+
+*/
+
+ var tokens = [];
 var tokenIndex = 0;
 var currentToken = "";
 var errorCount = 0;
@@ -124,12 +158,13 @@ var programs
             errorCount = 0;
             inQuotes = false;
 		var codeBody = document.getElementById("taSourceCode").value;  
-			programs = codeBody.split('\$\n');
+			programs = codeBody.split('\$\n | \n\$');
         	//putMessage("LEXING PROGRAM #" + programCount);
         	
      if(codeBody.charAt(codeBody.length-1) != "$"){
         	document.getElementById("taSourceCode").value+="$";
-        	code+="$";
+        	codeBody+="$";
+            code+="$"
         	}
 
        
@@ -158,13 +193,28 @@ var programs
         	ptr++;
         }
 
-      
+     
       programs = code.split('\n\$');
       programs.pop();
-     //bitch = programs.splice('\$\n');
+      var counter = 0;
+      for(j = 0; j < programs[programs.length-1].length; j++){
+        if (programs[programs.length-1].charAt[j] === '\n'){
+            console.log("WE GOT A NEWLINE BOY")
+            counter++;
+        }
+      }
+
+      if (counter ==0){
+        programs.pop();
+      }
+     
+
+
      if(programs.length <1){
         programs.push(code);
      }
+
+     if(programs[programs.length-1])
       console.log(programs)
 
      for(i =0; i<programs.length ; i++){
@@ -575,9 +625,10 @@ var programs
 
 
             }
-            console.log(cst.toString())
+            resetGlobals();
+            //console.log(cst.toString())
             putMessage("COMPILATION FINISHED");
-
+            console.log(cst)
            
 
     }
