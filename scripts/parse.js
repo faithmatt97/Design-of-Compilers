@@ -60,8 +60,8 @@ function parseBlock(){
 		parseStatementList();
 		match(["TOKEN_RIGHTBRACE"])
 		cst.endChildren();
-		cst.addNode("$")
-		cst.endChildren();
+		
+		//cst.endChildren();
 		
 
 	}
@@ -93,7 +93,8 @@ function parseStatementList(){
 
 	else{
 		console.log("Received Epsilon ");
-		cst.endChildren();
+		//cst.endChildren();
+		return;
 	}
 
 	
@@ -290,30 +291,36 @@ function parseCharList(){
 
 	else 
 	{   
-        
+       
 		console.log("PARSER --> Parsing for [Charlist]");
 		if(checkToken().type === "TOKEN_CHAR"){
             cst.addNode("Charlist", "branch")
             cst.addNode("char", "branch")
 			match(["TOKEN_CHAR"]);
-            cst.endChildren();
+            
             cst.endChildren()
+           // cst.endChildren()
 			parseCharList();
+			//cst.endChildren()
+			
 		}
 
 		else if(checkToken().type === "TOKEN_SPACE"){
-            cst.addNode("Charlist", "branch");
+            cst.addNode("Charlist", "branch")
             cst.addNode("Space", "branch");
 			match(["TOKEN_SPACE"]);
-            cst.endChildren();
+            
             cst.endChildren()
+            //cst.endChildren()
 			parseCharList();
+
+
 		}
 
 		else {
-
+				return;
 		}
-        //cst.endChildren()
+       cst.endChildren()
 	}
 }
 
