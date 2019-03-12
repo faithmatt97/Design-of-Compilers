@@ -158,6 +158,11 @@ var programs
 		
 		var quoteLine;
 		var quoteColumn;
+
+        inComment = false;
+            errors = 0;
+            errorCount = 0;
+            inQuotes = false;
 		var codeBody = document.getElementById("taSourceCode").value;  
 			programs = codeBody.split('\$\n');
         	//putMessage("LEXING PROGRAM #" + programCount);
@@ -198,7 +203,11 @@ var programs
       programs = code.split('\n\$');
       programs.pop();
      //bitch = programs.splice('\$\n');
+     if(programs.length <1){
+        programs.push(code);
+     }
       console.log(programs)
+
      for(i =0; i<programs.length ; i++){
      		putMessage("LEXING PROGRAM #"+ i);
      		errorInCurrentProgram = false;
