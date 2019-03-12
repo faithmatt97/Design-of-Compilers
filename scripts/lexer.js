@@ -1,40 +1,6 @@
-/* lexer.js  
+/* lexer.js  */
 
-Since Alan hates us and wants us to Parse before lexing the following program, I must make adjustments.
-So here's what I'm thinking
-
-We modify the EOF token so it only registers if its the last token on the line (not really needed tbh)
-We split the source code by regex described above. Now each program is in its own array element
-After we finish lexing we call parse function.
-
-OKAY tried that and failed because I guess strings dont have multiline functionality so maybe we'll split it by \$\n
-
-Not pushing anything until we get lexer working with these new adjustments. gonna be a huge pain in the ass. 
-
-since we split by \n we need to track that in lines and columns - DONE
-Check if everything still works with new changes - MOSTLY DONE
-		I can't decide if I want unclosed comments to stop the entire compiler or simply pick up with next program. Right now it does the latter. 
-
-*/
-
-/*
-	Bugs I've found:
-		Having two assign statements in a row will cause an infinite loop. 
-		I've fixed it by putting in conditional statement to detect assign statements in the Expr block (despite assign states not being Expressions) 
-		*Have yet to see if everything else still works with new changes
-
-	UPDATE: 
-		Everything seems to be working for parse
-	WHAT'S NEXT:
-		-Construct CST (I HATE TREES bc i always study for them and never get them in interviews. >:U )
-		-Fix multiprogram functionality   
-			Alan said to not make my compiler so fragile so i gotta correct that :/
-		-Add line and column report, easy peasy
-
-
-*/
-
- var tokens = [];
+var tokens = [];
 var tokenIndex = 0;
 var currentToken = "";
 var errorCount = 0;
@@ -133,13 +99,7 @@ var programs
       var codeBody = document.getElementById("taSourceCode").value;  
       code= trim(codeBody);
       parse();
-       programs = codeBody.split('\$\n');
-      //programs = codeBody.split('\$(?=\n)');
-        //console.log(codeBody)
-        //console.log(programs)
-       // console.log(programs[programs.length-1].charAt(programs[programs.length-1].length-1))
-        
-        
+       programs = codeBody.split('\$\n');  
     }
     
     function putMessage(msg) {
@@ -198,8 +158,7 @@ var programs
         	ptr++;
         }
 
-      console.log(code)
-      putMessage(code)
+      
       programs = code.split('\n\$');
       programs.pop();
      //bitch = programs.splice('\$\n');
@@ -209,7 +168,7 @@ var programs
       console.log(programs)
 
      for(i =0; i<programs.length ; i++){
-     		putMessage("LEXING PROGRAM #"+ i);
+     		putMessage("\nLEXING PROGRAM #"+ i);
      		errorInCurrentProgram = false;
      		inComment = false;
      		errors = 0;
