@@ -1,35 +1,5 @@
 /* lexer.js  
 
-Since Alan hates us and wants us to Parse before lexing the following program, I must make adjustments.
-So here's what I'm thinking
-
-We modify the EOF token so it only registers if its the last token on the line (not really needed tbh)
-We split the source code by regex described above. Now each program is in its own array element
-After we finish lexing we call parse function.
-
-OKAY tried that and failed because I guess strings dont have multiline functionality so maybe we'll split it by \$\n
-
-Not pushing anything until we get lexer working with these new adjustments. gonna be a huge pain in the ass. 
-
-since we split by \n we need to track that in lines and columns - DONE
-Check if everything still works with new changes - MOSTLY DONE
-		I can't decide if I want unclosed comments to stop the entire compiler or simply pick up with next program. Right now it does the latter. 
-
-*/
-
-/*
-	Bugs I've found:
-		Having two assign statements in a row will cause an infinite loop. 
-		I've fixed it by putting in conditional statement to detect assign statements in the Expr block (despite assign states not being Expressions) 
-		*Have yet to see if everything else still works with new changes
-
-	UPDATE: 
-		Everything seems to be working for parse
-	WHAT'S NEXT:
-		-Construct CST (I HATE TREES bc i always study for them and never get them in interviews. >:U )
-		-Fix multiprogram functionality   
-			Alan said to not make my compiler so fragile so i gotta correct that :/
-		-Add line and column report, easy peasy
 
 
 */
@@ -158,13 +128,16 @@ var programs
             errorCount = 0;
             inQuotes = false;
 		var codeBody = document.getElementById("taSourceCode").value;  
-			programs = codeBody.split('\$\n | \n\$');
-        	//putMessage("LEXING PROGRAM #" + programCount);
+			
+            programs = codeBody.split('\$\n | \n\$');
         	
+        	codeBody = codeBody.trim()
      if(codeBody.charAt(codeBody.length-1) != "$"){
         	document.getElementById("taSourceCode").value+="$";
         	codeBody+="$";
             code+="$"
+            putMessage("\t No EOF token. Automatically Injected")
+            warningCount++;
         	}
 
        
@@ -197,7 +170,10 @@ var programs
       programs = code.split('\n\$');
       programs.pop();
       var counter = 0;
-      for(j = 0; j < programs[programs.length-1].length; j++){
+       if(programs.length <1){
+        programs.push(code);
+     }
+      /*for(j = 0; j < programs[programs.length-1].length; j++){
         if (programs[programs.length-1].charAt[j] === '\n'){
             console.log("WE GOT A NEWLINE BOY")
             counter++;
@@ -205,8 +181,8 @@ var programs
       }
 
       if (counter ==0){
-        programs.pop();
-      }
+        //programs.pop();
+      }*/
      
 
 
@@ -236,6 +212,7 @@ var programs
                           }
                           else if(regNewLine.test(programs[i].charAt(lexPtr)))
                           	line++;
+                            column = 0;
                         }
 
                             // If there's error > ignore everything till EOF so we can lex next program. Tbh idk why the QUOTE test is in there, but i only add stuff when i fuck up 
@@ -433,6 +410,7 @@ var programs
                             	tokenArray[tokenArray.length-1].line + " column:" +
                             	tokenArray[tokenArray.length-1].colNumber);
 							lexPtr+=5;
+                            column+=5
 
 
 						}
@@ -445,7 +423,7 @@ var programs
                             	tokenArray[tokenArray.length-1].line + " column:" +
                             	tokenArray[tokenArray.length-1].colNumber);
 							lexPtr+=6;
-
+                            column +=6
 							
 						}
                             //CHECK FOR VAR TYPE INT
@@ -457,7 +435,7 @@ var programs
                             	tokenArray[tokenArray.length-1].line + " column:" +
                             	tokenArray[tokenArray.length-1].colNumber);
 							lexPtr+=2;
-
+                            column+=2
 							
 						}
 						
@@ -580,7 +558,7 @@ var programs
             {
             	errors++
                 errorCount++;
-                putMessage(" \t ERROR: no closing comment symbol at line:" + commentLine + " , column:" + commentCol +"  Warnings:" +warningCount + " Errors:" +errors);
+                putMessage(" \t ERROR: no closing comment symbol for opening comment symbol at line:" + commentLine + " , column:" + commentCol +"  Warnings:" +warningCount + " Errors:" +errors);
                // document.getElementById("taSourceCode").value+="$"
 				
 				
@@ -608,18 +586,19 @@ var programs
             
 				lexPtr = 0;
 				//line++; //this was causing faulty line count
-				column = 0;
+				//column = 0;
 				programTokens = tokenArray;
 				//console.log(tokenArray);
 				tokenArray = [];
 				ok =checkToken();
 				//console.log(ok);
-				
+				putMessage("Finished lexing program #" +i + " Warnings:" +warningCount + " Errors:" +errors);
+                warningCount = 0;
 				parseErrors = errors;
+                errors = 0;
 				
 				parseProgram();
-				//cst = new Tree()
-
+				
 				//console.log(match(["TOKEN_LEFTBRACE	"]))
 
 
