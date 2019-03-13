@@ -43,9 +43,13 @@ function parseProgram(){  //Everything from here on out is self explanatory
 		parseBlock()
 		tempcst.endChildren();
 
-		if(parseErrors >0){
+		if(parseErrors >0)
+		{
 			putMessage("PARSER STOPPED DUE TO ERROR")
-			tempcst= new Tree()}
+			tempcst= new Tree()
+		}
+			if(checkToken())
+		parseBlock();
 		else if(parseErrors ==0){
 			putMessage("PARSER FINISHED")
 			cst = cst +  tempcst;
@@ -53,12 +57,15 @@ function parseProgram(){  //Everything from here on out is self explanatory
 		}
 	}
 
+	if(checkToken())
+		parseBlock();
+
 }
 
 function parseBlock(){
 	if(parseErrors > 0)
 	{
-		putMessage("PARSER ENCOUNTERED ERROR SO IT STOPPED")
+		//putMessage("PARSER ENCOUNTERED ERROR SO IT STOPPED")
 		return;
 	} 
 
@@ -117,7 +124,7 @@ function parseStatement(){
 
 	if(parseErrors > 0)
 	{
-		putMessage("PARSER ENCOUNTERED ERROR SO IT STOPPED")
+		//putMessage("PARSER ENCOUNTERED ERROR SO IT STOPPED")
 		return;
 	}
 	else
@@ -144,8 +151,9 @@ function parseStatement(){
 			parseBlock();
 
 		else{
-			putMessage("ERROR ERROT ERROR")
+			putMessage("\t!**ERROR Expecting [Statement] but received [" + checkToken().value + "] on line:" + checkToken().line + " column:" + checkToken().colNumber)
 			parseErrors++;
+			return;
 		}
 
         tempcst.endChildren()
@@ -158,7 +166,7 @@ function parseExpr(){
 
 	if(parseErrors > 0)
 	{
-		putMessage("PARSER ENCOUNTERED ERROR SO IT STOPPED")
+		//putMessage("PARSER ENCOUNTERED ERROR SO IT STOPPED")
 		return;
 	}
 
@@ -187,7 +195,7 @@ function parseExpr(){
 
 		else
 		{
-			console.log('%c ERROR: Expecting [Expr], but received [' + checkToken().type + "]", ' color:red')
+			putMessage("\t!**ERROR Expecting [Expr] but received [" + checkToken().value + "] on line:" + checkToken().line + " column:" + checkToken().colNumber)
 			parseErrors++;
 			return;
 		}
@@ -198,7 +206,7 @@ function parseExpr(){
 function parseIntExpr(){
 	if(parseErrors > 0)
 	{
-		putMessage("PARSER ENCOUNTERED ERROR SO IT STOPPED")
+		//putMessage("PARSER ENCOUNTERED ERROR SO IT STOPPED")
 		return;
 	}
 
@@ -241,7 +249,7 @@ function parseStringExpr(){
 
 	if(parseErrors > 0)
 	{
-		putMessage("PARSER ENCOUNTERED ERROR SO IT STOPPED")
+		//putMessage("PARSER ENCOUNTERED ERROR SO IT STOPPED")
 		return;
 	}
 
@@ -261,7 +269,7 @@ function parseBooleanExpr(){
 
 	if(parseErrors > 0)
 	{
-		putMessage("PARSER ENCOUNTERED ERROR SO IT STOPPED")
+		//putMessage("PARSER ENCOUNTERED ERROR SO IT STOPPED")
 		return;
 	}
 
@@ -296,7 +304,7 @@ function parseBooleanExpr(){
 function parseCharList(){
 
 	if(parseErrors > 0){
-		putMessage("PARSER ENCOUNTERED ERROR SO IT STOPPED")
+		//putMessage("PARSER ENCOUNTERED ERROR SO IT STOPPED")
 		return;
 	}
 
@@ -338,7 +346,7 @@ function parseCharList(){
 function parsePrintStatement(){
 	if(parseErrors > 0)
 	{
-		putMessage("PARSER ENCOUNTERED ERROR SO IT STOPPED")
+		//putMessage("PARSER ENCOUNTERED ERROR SO IT STOPPED")
 		return;
 	}
 
@@ -357,7 +365,7 @@ function parsePrintStatement(){
 function parseAssignStatement(){
 	if(parseErrors > 0)
 	{
-		putMessage("PARSER ENCOUNTERED ERROR SO IT STOPPED")
+		//putMessage("PARSER ENCOUNTERED ERROR SO IT STOPPED")
 		return;
 	}
 
@@ -379,7 +387,7 @@ function parseAssignStatement(){
 function parseVarDecl(){
 	if(parseErrors > 0)
 	{
-		putMessage("PARSER ENCOUNTERED ERROR SO IT STOPPED")
+		//putMessage("PARSER ENCOUNTERED ERROR SO IT STOPPED")
 		return;
 	}
 
@@ -401,7 +409,7 @@ function parseVarDecl(){
 function parseWhileStatement(){
 
 	if(parseErrors > 0){
-		putMessage("PARSER ENCOUNTERED ERROR SO IT STOPPED")
+		//putMessage("PARSER ENCOUNTERED ERROR SO IT STOPPED")
 		return;
 	}
 
@@ -419,7 +427,7 @@ function parseWhileStatement(){
 function parseIfStatement(){
 	if(parseErrors > 0)
 	{
-		putMessage("PARSER ENCOUNTERED ERROR SO IT STOPPED")
+		//putMessage("PARSER ENCOUNTERED ERROR SO IT STOPPED")
 		return;
 	}
 
@@ -452,7 +460,7 @@ function match(expectedToken){
 		}
 		else
 		{
-			putMessage("%c ERROR: Received  [" + currentToken.type + "] instead of expected [" + expectedToken + "] on line:" + currentToken.line + " column:" + currentToken.colNumber, 'color:red');
+			putMessage("% !**ERROR: Received  [" + currentToken.type + "] instead of expected [" + expectedToken + "] on line:" + currentToken.line + " column:" + currentToken.colNumber, 'color:red');
 			parseErrors++;
 		
 		}
