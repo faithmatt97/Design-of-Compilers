@@ -1,3 +1,2 @@
 # Design-of-Compilers
-How to Build:
-Open index.html
+How to Build: Download, unzip, open html file
