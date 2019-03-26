@@ -607,7 +607,7 @@ var programs
             resetGlobals();
             //console.log(cst.toString())
             putMessage("COMPILATION FINISHED");
-            putMessage(cst)
+            //putMessage(cst)
            
 
     }
