@@ -48,21 +48,30 @@ function parseProgram(){  //Everything from here on out is self explanatory
 			putMessage("PARSER STOPPED DUE TO ERROR")
 			tempcst= new Tree()
 		}
-			if(checkToken())
-		parseBlock();
+		if(checkToken() && parseErrors ==0){
+			putMessage("ERROR: Expected EOP but received [" + checkToken().type + " ] on line:");
+			parseErrors++;
+			return;
+		}
 		else if(parseErrors ==0){
 			putMessage("PARSER FINISHED")
-			cst = cst +  tempcst;
+			putMessage(tempcst)
 			//console.log(cst)
 		}
 	}
 
-	if(checkToken())
-		parseBlock();
+	//if(checkToken())
+	//	putMessage("ERROR: Expected EOP but received [" + checkToken().type + " ] on line:"); //checkToken().line + " column:" + checkToken().colNumber  );
 
 }
 
 function parseBlock(){
+	if(programTokens.length<1){
+		
+		putMessage("ERROR: PREMATURELY met end of input for current program on last line of program.")
+		parseErrors++;
+		return;
+	}
 	if(parseErrors > 0)
 	{
 		//putMessage("PARSER ENCOUNTERED ERROR SO IT STOPPED")
@@ -88,6 +97,12 @@ function parseBlock(){
 }
 
 function parseStatementList(){
+	if(programTokens.length<1){
+		
+		putMessage("ERROR: PREMATURELY met end of input for current program on last line of program.")
+		parseErrors++;
+		return;
+	}
 
 	if(parseErrors > 0)
 	{
@@ -101,7 +116,7 @@ function parseStatementList(){
 
 		putMessage("\t PARSER --> Parsing [StatementList]");
 	
-		if( (checkToken().type ==="TOKEN_LEFTBRACE") || (checkToken().type ==="TOKEN_ID") && (LookAhead().type === "TOKEN_ASSIGN") || (checkToken().type ==="TOKEN_PRINT") || (checkToken().type === "TOKEN_ASSIGN") ||(checkToken().type === "TOKEN_TYPEINT") || (checkToken().type === "TOKEN_TYPESTRING") || (checkToken().type === "TOKEN_TYPEBOOLEAN") || (checkToken().type === "TOKEN_WHILE") || (checkToken().type === "TOKEN_IF")){
+		if( (checkToken().type ==="TOKEN_LEFTBRACE") || (checkToken().type ==="TOKEN_ID") /*&& (LookAhead().type === "TOKEN_ASSIGN")*/ || (checkToken().type ==="TOKEN_PRINT") || (checkToken().type === "TOKEN_ASSIGN") ||(checkToken().type === "TOKEN_TYPEINT") || (checkToken().type === "TOKEN_TYPESTRING") || (checkToken().type === "TOKEN_TYPEBOOLEAN") || (checkToken().type === "TOKEN_WHILE") || (checkToken().type === "TOKEN_IF")){
 			tempcst.addNode("StatementList", "branch");
             parseStatement();
 			parseStatementList();
@@ -121,6 +136,12 @@ function parseStatementList(){
 }
 
 function parseStatement(){
+	if(programTokens.length<1){
+		
+		putMessage("ERROR: PREMATURELY met end of input for current program on last line of program.")
+		parseErrors++;
+		return;
+	}
 
 	if(parseErrors > 0)
 	{
@@ -135,7 +156,7 @@ function parseStatement(){
 		if(checkToken().type === "TOKEN_PRINT")
 			parsePrintStatement();
 	
-		else if(checkToken().type === "TOKEN_ID" && (LookAhead().type === "TOKEN_ASSIGN"))
+		else if(checkToken().type === "TOKEN_ID" /*&& (LookAhead().type === "TOKEN_ASSIGN")*/)
 			parseAssignStatement();
 		
 		else if( (checkToken().type === "TOKEN_TYPEINT") || (checkToken().type === "TOKEN_TYPEBOOLEAN") || (checkToken().type === "TOKEN_TYPESTRING"))
@@ -162,8 +183,15 @@ function parseStatement(){
 }
 
 function parseExpr(){
+	
 
-
+	if(programTokens.length<1){
+		
+		putMessage("ERROR: PREMATURELY met end of input for current program on last line of program.")
+		parseErrors++;
+		return;
+	}
+	
 	if(parseErrors > 0)
 	{
 		//putMessage("PARSER ENCOUNTERED ERROR SO IT STOPPED")
@@ -181,7 +209,7 @@ function parseExpr(){
 			parseStringExpr();
 		else if ( (checkToken().type === "TOKEN_LEFTPAREN") || (checkToken().type === "TOKEN_BOOLFALSE") || (checkToken().type === "TOKEN_BOOLTRUE"))
 			parseBooleanExpr();
-		else if(checkToken().type ==="TOKEN_ID" && (LookAhead().type ==="TOKEN_ASSIGN")){
+		else if(checkToken().type ==="TOKEN_ID" /*&& (LookAhead().type ==="TOKEN_ASSIGN")*/){
 			putMessage("Parsing for ID")
 			parseAssignStatement();
 		}
@@ -204,6 +232,14 @@ function parseExpr(){
 	
 }
 function parseIntExpr(){
+
+	if(programTokens.length<1){
+		
+		putMessage("ERROR: PREMATURELY met end of input for current program on last line of program.")
+		parseErrors++;
+		return;
+	}
+
 	if(parseErrors > 0)
 	{
 		//putMessage("PARSER ENCOUNTERED ERROR SO IT STOPPED")
@@ -245,7 +281,12 @@ function parseIntExpr(){
 
 function parseStringExpr(){
 
-
+	if(programTokens.length<1){
+		
+		putMessage("ERROR: PREMATURELY met end of input for current program on last line of program.")
+		parseErrors++;
+		return;
+	}
 
 	if(parseErrors > 0)
 	{
@@ -266,7 +307,12 @@ function parseStringExpr(){
 }
 
 function parseBooleanExpr(){
-
+	if(programTokens.length<1){
+		
+		putMessage("ERROR: PREMATURELY met end of input for current program on last line of program.")
+		parseErrors++;
+		return;
+	} 
 	if(parseErrors > 0)
 	{
 		//putMessage("PARSER ENCOUNTERED ERROR SO IT STOPPED")
@@ -302,7 +348,12 @@ function parseBooleanExpr(){
 }
 
 function parseCharList(){
-
+	if(programTokens.length<1){
+		
+		putMessage("ERROR: PREMATURELY met end of input for current program on last line of program.")
+		parseErrors++;
+		return;
+	}
 	if(parseErrors > 0){
 		//putMessage("PARSER ENCOUNTERED ERROR SO IT STOPPED")
 		return;
@@ -344,6 +395,12 @@ function parseCharList(){
 }
 
 function parsePrintStatement(){
+	if(programTokens.length<1){
+		
+		putMessage("ERROR: PREMATURELY met end of input for current program on last line of program.")
+		parseErrors++;
+		return;
+	}
 	if(parseErrors > 0)
 	{
 		//putMessage("PARSER ENCOUNTERED ERROR SO IT STOPPED")
@@ -363,6 +420,12 @@ function parsePrintStatement(){
 }
 
 function parseAssignStatement(){
+	if(programTokens.length<1){
+		
+		putMessage("ERROR: PREMATURELY met end of input for current program on last line of program.")
+		parseErrors++;
+		return;
+	}
 	if(parseErrors > 0)
 	{
 		//putMessage("PARSER ENCOUNTERED ERROR SO IT STOPPED")
@@ -385,6 +448,12 @@ function parseAssignStatement(){
 }
 
 function parseVarDecl(){
+	if(programTokens.length<1){
+		
+		putMessage("ERROR: PREMATURELY met end of input for current program on last line of program.")
+		parseErrors++;
+		return;
+	}
 	if(parseErrors > 0)
 	{
 		//putMessage("PARSER ENCOUNTERED ERROR SO IT STOPPED")
@@ -407,6 +476,12 @@ function parseVarDecl(){
 }
 
 function parseWhileStatement(){
+	if(programTokens.length<1){
+		
+		putMessage("ERROR: PREMATURELY met end of input for current program on last line of program.")
+		parseErrors++;
+		return;
+	}
 
 	if(parseErrors > 0){
 		//putMessage("PARSER ENCOUNTERED ERROR SO IT STOPPED")
@@ -425,9 +500,16 @@ function parseWhileStatement(){
 }
 
 function parseIfStatement(){
+	if(programTokens.length<1){
+		
+		putMessage("ERROR: PREMATURELY met end of input for current program on last line of program.")
+		parseErrors++;
+		return;
+	}
 	if(parseErrors > 0)
 	{
 		//putMessage("PARSER ENCOUNTERED ERROR SO IT STOPPED")
+
 		return;
 	}
 
