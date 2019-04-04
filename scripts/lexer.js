@@ -583,21 +583,33 @@ var programs
             } */
 
                
-            
+               
+                copy = tokenArray.slice(0);
+                console.log(copy)
+                sTokens = tokenArray;
 				lexPtr = 0;
 				//line++; //this was causing faulty line count
 				//column = 0;
 				programTokens = tokenArray;
+               
 				//console.log(tokenArray);
-				tokenArray = [];
-				ok =checkToken();
-				//console.log(ok);
+				//tokenArray = [];
+				
 				putMessage("Finished lexing program #" +i + " Warnings:" +warningCount + " Errors:" +errors);
                 warningCount = 0;
 				parseErrors = errors;
                 errors = 0;
 				
+                //sProgram(tokenArray);
+                    console.log(sTokens)
+                    //sProgram(copy);
 				parseProgram();
+                    sProgram(copy);
+                    
+                        
+                   // sProgram(tokenArray);
+                    // /console.log(sTokens)
+                
 				
 				//console.log(match(["TOKEN_LEFTBRACE	"]))
 
