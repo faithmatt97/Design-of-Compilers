@@ -1,12 +1,53 @@
 
 var sTokens;
+var symbolMap;
+var symbolTree;
+//For Semantic Analysis. Constructing AST from tokens bc traversing non binary tree is giving me a goddamn headache;
 
-//For Semantic Analysis. Constructing AST from tokens bc tree is giving me a goddamn headache;
+//can i do this without creating tree of hashmaps, but simply one big hashmap???
+//variable ids will be keys
+// values will be object holding information 
+//if we fail to find key value pair in current scope, we'll move back a pair
+//collisions will still happen
 var sErrors=0;
 var sWarnings = 0;
 var ast;
+var scopelvl = -1;
 
+function checkIfExists(){
 
+}
+
+function checkIfDeclared(id){
+	counter = 0
+	//for(i = 0; i<symbolTree.current.symbols.length; i++){
+	/*if(symbolTree.current.symbols[i].id === sCurrentToken.value){  //if map already has id at current scope
+				console.log(symbolMap.get(sCurrentToken.value).scope);
+				console.log("Error: redeclared variable")    //Error message
+				console.log("It has it");
+				//break;
+			}
+			else{
+
+				
+				symbolMap.set(sCurrentToken.value, new Symbol(sCurrentToken.value, "dummy type", 0, scopelvl, sCurrentToken.line, sCurrentToken.colNumber, true, false));
+				
+				symbolTree.current.symbols.push(new Symbol(sCurrentToken.value, "dummy type", 0, scopelvl, sCurrentToken.line, sCurrentToken.colNumber, true, false));
+			}
+		//}*/
+
+		for(i = 0; i< symbolTree.current.symbols.length; i++){
+			if(id == symbolTree.current.symbols[i].getID()){
+				console.log('id exists');
+				counter++;
+			}
+		}
+
+		if(counter ==0){
+			console.log("Does not exist")
+			symbolTree.current.symbols.push(new Symbol(sCurrentToken.value, "dummy type", 0, scopelvl, sCurrentToken.line, sCurrentToken.colNumber, true, false))
+		}
+}
 function sGetToken(){
 
 	sCurrentToken = sTokens[0];
@@ -16,30 +57,43 @@ function sGetToken(){
 }
 
 function sProgram(tokens){
+	symbolMap = new Map();
+	symbolTree = new SymbolTree();
 	sTokens = tokens;
 	
 	sToken = tokens;
-	console.log(sTokens)
+	//console.log(sTokens)
 
 	ast = new Tree();
 	ast.addNode("Program");
 	sGetToken();
-	console.log(sCurrentToken.type)
+	//console.log(sCurrentToken.type)
 	sBlock();
 	ast.endChildren
 	console.log(ast.toString())
+	console.log(symbolMap)
+	console.log(symbolTree	)
 	
 }
 function sBlock(){
-
+scopelvl++;
+	symbolTree.addNode("Scope Level:" + scopelvl, "branch");
+	
 	ast.addNode("Block" , "branch");
-	if (sCurrentToken.type === "TOKEN_LEFTBRACE") 
+	if (sCurrentToken.type === "TOKEN_LEFTBRACE") {
         sGetToken();
+        
+	}
 
     sStatementlist();
 
-    if(sCurrentToken.type === "TOKEN_RIGHTBRACE")
+    if(sCurrentToken.type === "TOKEN_RIGHTBRACE"){
+    	
     	sGetToken();
+    }
+    scopelvl--;
+    symbolTree.endChildren();
+    ast.endChildren();
 }
 
 function sStatement(){
@@ -73,7 +127,7 @@ function sStatement(){
 
 function sStatementlist(){
 
-	console.log(sCurrentToken.type)
+	
 		if (sCurrentToken.type === "TOKEN_RIGHTBRACE"){
 
 		}
@@ -127,12 +181,15 @@ function sAssignmentStatement(){
 function sVarDecl(){
 
 		ast.addNode("VarDecl", "branch");
-
+		//varType = sCurrentToken.type;
 		sGetToken();
+		
 
 		if(sCurrentToken.type ==="TOKEN_ID"){
-			sID();
-
+			checkIfDeclared(sCurrentToken.value);
+			
+			
+				sID();
 		}
 
 
@@ -200,7 +257,7 @@ function sIntExpr(){
 		sID();
 
 		if(sCurrentToken.type === "TOKEN_INTOP"){
-			console.log("PLEASE")
+			
 
 			sGetToken();
 			sExpr();
