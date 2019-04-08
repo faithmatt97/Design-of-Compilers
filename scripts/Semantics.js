@@ -1,709 +1,307 @@
-var cst 
-var tempcst;
-cst.addNode("Root", "branch")
-var prematureEnd = false
 
-function resetGlobals(){
-	parseErrors = 0;
-	tempcst = new Tree();
-	prematureEnd = false;
-}
+var sTokens;
 
-function checkIfEndOfSourceCode(){
-	if ( programTokens == null){
-		prematureEnd = true;		
-	}
+//For Semantic Analysis. Constructing AST from tokens bc tree is giving me a goddamn headache;
+var sErrors=0;
+var sWarnings = 0;
+var ast;
 
-	if (prematureEnd)
-		return true;
+
+function sGetToken(){
+
+	sCurrentToken = sTokens[0];
+	sTokens.shift();
+
 
 }
 
-function checkErrors(){
-	if(parseErrors > 1)
-		return true;; 
-}
-
-function getToken(){   //consumes next token
-	currentToken = programTokens.shift()
-}
-
-function checkToken(){  //checks next token
-	return programTokens[0];
-}
-
-function LookAhead(){ //checks 2 tokens ahead
-	return programTokens[1];
-}
-
-function parseProgram(){  //Everything from here on out is self explanatory 
- 	    parseErrors = 0;
- 	    prematureEnd = false;
-	putMessage("\nPARSING PROGRAM " + i)
-	tempcst = new Tree();
-
-	if(parseErrors > 0)     // If we encounter error, stop program
-	{
-		putMessage("\tPARSER-->ERRORS FOUND IN LEX. UNABLE TO PARSE")
-		return;
-	}
-
-	else                   // else continue parsing 
-	{
-		tempcst.addNode("Program " + i, "branch");
-		putMessage("\t PARSER --> Parsing [Program]");
-		parseBlock()
-		tempcst.endChildren();
-		//match(["TOKEN_EOF"]);
-		if(parseErrors >0)
-		{
-			putMessage("PARSER STOPPED DUE TO ERROR")
-			//tempcst= new Tree()
-		}
-
-		else if(checkToken() && parseErrors ==0){
-			putMessage("ERROR: Expected EOP but received [" + checkToken().type + " ] on line:");
-			parseErrors++;
-			//tempcst= new Tree() 
-			return;
-		}
-
-		else if(parseErrors ==0 && !prematureEnd){
-			putMessage("PARSER FINISHED")
-			putMessage(tempcst)
-			
-		}
-	}
-
+function sProgram(tokens){
+	sTokens = tokens;
 	
+	sToken = tokens;
+	console.log(sTokens)
 
-}
-
-function parseBlock(){
-	if(checkToken() == undefined)
-			return;
-
-	
-
-	/*/*if(programTokens.length<1){
-		
-		putMessage("ERROR: PREMATURELY met end of input for current program on last line of program.")
-		parseErrors++;
-		return;
-	}*/
-
-	if(parseErrors > 0)
-	{
-		
-		return;
-	} 
-
-	else{
-		tempcst.addNode("Block", "branch")
-		
-		putMessage("\t PARSER --> Parsing for [Block]");
-		match(["TOKEN_LEFTBRACE"]);
-		
-		parseStatementList();
-		match(["TOKEN_RIGHTBRACE"])
-		tempcst.endChildren();
-		
-		
-		
-
-	}
-	
+	ast = new Tree();
+	ast.addNode("Program");
+	sGetToken();
+	console.log(sCurrentToken.type)
+	sBlock();
+	ast.endChildren
+	console.log(ast.toString())
 	
 }
+function sBlock(){
 
-function parseStatementList(){
-	if(checkToken() == undefined){
-		return;
-	}
+	ast.addNode("Block" , "branch");
+	if (sCurrentToken.type === "TOKEN_LEFTBRACE") 
+        sGetToken();
 
-	/*if(programTokens.length<1){
-		
-		putMessage("ERROR: PREMATURELY met end of input for current program on last line of program.")
-		parseErrors++;
-		return;
-	}*/
+    sStatementlist();
 
-
-	if(parseErrors > 0)
-	{
-		
-		return;
-	}
-
-	else 
-	{
-		
-
-		putMessage("\t PARSER --> Parsing [StatementList]");
-	
-		if( (checkToken().type ==="TOKEN_LEFTBRACE") || (checkToken().type ==="TOKEN_ID")  /*&& (LookAhead().type === "TOKEN_ASSIGN")*/ || (checkToken().type ==="TOKEN_PRINT") || (checkToken().type === "TOKEN_ASSIGN") ||(checkToken().type === "TOKEN_TYPEINT") || (checkToken().type === "TOKEN_TYPESTRING") || (checkToken().type === "TOKEN_TYPEBOOLEAN") || (checkToken().type === "TOKEN_WHILE") || (checkToken().type === "TOKEN_IF")){
-			tempcst.addNode("StatementList", "branch");
-            parseStatement();
-			parseStatementList();
-			tempcst.endChildren();
-            
-		}
-
-	else{
-		putMessage("Received Epsilon ");
-		
-		return;
-	}
-
-	
-    
-    }
+    if(sCurrentToken.type === "TOKEN_RIGHTBRACE")
+    	sGetToken();
 }
 
-function parseStatement(){
-
-	if(checkToken() == undefined)
-			return;
-
-
-	
-
-	if(parseErrors > 0)
-	{
-		
-		return;
-	}
-	else
-	{
-		tempcst.addNode("Statement", "branch")
-		putMessage("\t PARSER --> Parsing for [Statement]");
-
-		if(checkToken().type === "TOKEN_PRINT")
-			parsePrintStatement();
-	
-		else if(checkToken().type === "TOKEN_ID" /*&& (LookAhead().type === "TOKEN_ASSIGN")*/)
-			parseAssignStatement();
-		
-		else if( (checkToken().type === "TOKEN_TYPEINT") || (checkToken().type === "TOKEN_TYPEBOOLEAN") || (checkToken().type === "TOKEN_TYPESTRING"))
-			parseVarDecl();
-	
-		else if(checkToken().type === "TOKEN_WHILE")
-			parseWhileStatement();
-
-		else if (checkToken().type === "TOKEN_IF")
-			parseIfStatement();
-
-		else if(checkToken().type ==="TOKEN_LEFTBRACE")
-			parseBlock();
-
-		else{
-			putMessage("\t!**ERROR Expecting [Statement] but received [" + checkToken().value + "] on line:" + checkToken().line + " column:" + checkToken().colNumber)
-			parseErrors++;
-			return;
-		}
-
-        tempcst.endChildren()
-
-	}
-}
-
-function parseExpr(){
-	/*if(checkToken() == undefined)
-			return;
-
-
-
-	/*if(programTokens.length<1){
-		
-		putMessage("ERROR: PREMATURELY met end of input for current program on last line of program.")
-		parseErrors++;
-		return;
-	}*/
-
-	
-	if(parseErrors > 0)
-	{
-		
-		return;
-	}
-
-	else
-	{
-		tempcst.addNode("Expr", "branch")
-		putMessage("\t PARSER --> Parsing for [Expr]");
-
-		if(checkToken().type === "TOKEN_DIGIT")
-			parseIntExpr();
-		else if (checkToken().type ==="TOKEN_QUOTE")
-			parseStringExpr();
-		else if ( (checkToken().type === "TOKEN_LEFTPAREN") || (checkToken().type === "TOKEN_BOOLFALSE") || (checkToken().type === "TOKEN_BOOLTRUE"))
-			parseBooleanExpr();
-		/*else if(checkToken().type ==="TOKEN_ID" /*&& (LookAhead().type ==="TOKEN_ASSIGN")){
-			putMessage("Parsing for ID")
-			parseAssignStatement();
-		}*/
-
-		else if (checkToken().type ==="TOKEN_ID") {
-            tempcst.addNode("ID", "branch");
-			putMessage("Parsing for ID")
-			match(["TOKEN_ID"])
-            tempcst.endChildren();
-		}
-
-		else
-		{
-			putMessage("\t!**ERROR Expecting [Expr] but received [" + checkToken().value + "] on line:" + checkToken().line + " column:" + checkToken().colNumber)
-			parseErrors++;
-			return;
-		}
-        tempcst.endChildren()
-	}
-	
-}
-function parseIntExpr(){
-	if(checkToken() == undefined){
-		
-		return;
-	}
-
-
-	/*if(programTokens.length<1){
-		
-		putMessage("ERROR: PREMATURELY met end of input for current program on last line of program.")
-		parseErrors++;
-		return;
-	}*/
-
-
-	if(parseErrors > 0)
-	{
-		
-		return;
-	}
-
-	else 
-	{	
-
-		
-		putMessage("\t PARSER --> Parsing for [IntExpr]");
-
-		if(checkToken() == undefined){
-		//putMessage(prematureEnd)
-		return;
-	}
-		if(checkToken().type === "TOKEN_DIGIT" && (LookAhead().type === "TOKEN_INTOP")){
-            tempcst.addNode("IntExpr", "branch")
-            tempcst.addNode("Digit" , "branch");
-			match(["TOKEN_DIGIT"]);
-            tempcst.endChildren();
-            tempcst.addNode("IntOp", "branch");
-
-
-			match(["TOKEN_INTOP"]);
-            tempcst.endChildren();
-			parseExpr();
-            tempcst.endChildren();
-             
-		}
-
-		else  {
-            tempcst.addNode("IntExpr", "branch")
-            tempcst.addNode("Digit" , "branch")
-			match(["TOKEN_DIGIT"]);
-            tempcst.endChildren();
-             tempcst.endChildren()
-        }
-
-       
-
-	}
-}
-
-function parseStringExpr(){
-	if(checkToken() == undefined){
-		prematureEnd = true;
-			return;
-		}
-
-
-
-	/*if(programTokens.length<1){
-		
-		putMessage("ERROR: PREMATURELY met end of input for current program on last line of program.")
-		parseErrors++;
-		return;
-	}*/
-
-
-	if(parseErrors > 0)
-	{
-		
-		return;
-	}
-
-	else
-	{
-		tempcst.addNode("StringExpr", "branch")
-		putMessage("\t PARSER --> Parsing for [StringExpr]");
-		match(["TOKEN_QUOTE"]);
-		parseCharList();
-		if(checkToken() == undefined){
-			prematureEnd = true;
-			return;
-		}
-
-		match(["TOKEN_QUOTE"]);
-		
-        tempcst.endChildren();
-	}
-}
-
-function parseBooleanExpr(){
-
-	if(checkToken() == undefined){
-
-		prematureEnd = true;
-			return;
-}
-
-	/*if(programTokens.length<1){
-		
-		putMessage("ERROR: PREMATURELY met end of input for current program on last line of program.")
-		parseErrors++;
-		return;
-	}*/
- 
-	if(parseErrors > 0)
-	{
-		
-		return;
-	}
-
-	else
-	{
-           
-		putMessage("\t PARSER --> Parsing for [BooleanExpr]");
-			if (checkToken().type === "TOKEN_LEFTPAREN"){
-                tempcst.addNode("BooleanExpr", "branch")
-				match(["TOKEN_LEFTPAREN"])
-				parseExpr();
-                tempcst.addNode("BoolOp", "branch");
-                if(checkToken() == undefined){
-					prematureEnd = true;
-					return;
-                }
-				match(["TOKEN_ISEQUAL", "TOKEN_NOTEQUAL"]);
-                tempcst.endChildren();
-				parseExpr();
-				if(checkToken() == undefined){
-					prematureEnd = true;
-					return;
-				}
-				match(["TOKEN_RIGHTPAREN"]);
-                 tempcst.endChildren()
-			}
-
-			else{
-                tempcst.addNode("BooleanExpr", "branch")
-                tempcst.addNode("BoolVal", "branch");
-				match(["TOKEN_BOOLFALSE", "TOKEN_BOOLTRUE"]);
-                tempcst.endChildren();
-                 tempcst.endChildren()
-            }
-           
-	}
-
-}
-
-function parseCharList(){
-
-	if(checkToken() == undefined){
-		prematureEnd = true;
-
-			return;
-	}
-
-
-	/*if(programTokens.length<1){
-		
-		putMessage("ERROR: PREMATURELY met end of input for current program on last line of program.")
-		parseErrors++;
-		return;
-	}*/
-
-	if(parseErrors > 0){
-		
-		return;
-	}
-
-	else 
-	{   
-       
-		putMessage("\t PARSER --> Parsing for [Charlist]");
-		if(checkToken().type === "TOKEN_CHAR"){
-            tempcst.addNode("Charlist", "branch")
-            tempcst.addNode("char", "branch")
-			match(["TOKEN_CHAR"]);
-            
-            tempcst.endChildren()
-           
-			parseCharList();
-			
-			
-		}
-
-		else if(checkToken().type === "TOKEN_SPACE"){
-            tempcst.addNode("Charlist", "branch")
-            tempcst.addNode("Space", "branch");
-			match(["TOKEN_SPACE"]);
-            
-            tempcst.endChildren()
-            
-			parseCharList();
-
-
-		}
-
-		else {
-				return;
-		}
-       tempcst.endChildren()
-	}
-}
-
-function parsePrintStatement(){
-
-	if(checkToken() == undefined){
-		prematureEnd = true;
-		return;
-	}
-			
-
-
-	/*if(programTokens.length<1){
-		
-		putMessage("ERROR: PREMATURELY met end of input for current program on last line of program.")
-		parseErrors++;
-		return;
-	}*/
-
-	else if(parseErrors > 0)
-	{
-		
-		return;
-	}
-
-	else 
-	{
-        tempcst.addNode("Print", "branch")
-		putMessage("\t PARSER --> Parsing for [Print Statement]");
-		match(["TOKEN_PRINT"]);
-		if(checkToken() == undefined){
-			prematureEnd = true;
-			return;
-		}
-		match(["TOKEN_LEFTPAREN"]);
-		parseExpr();
-		if(checkToken() == undefined){
-			prematureEnd = true;
-			return;
-		}
-		match(["TOKEN_RIGHTPAREN"]);
-        tempcst.endChildren()
-	}
-}
-
-function parseAssignStatement(){
-
-	if(checkToken() == undefined){
-			prematureEnd = true;
-			return;
-		}
-
-
-	/*if(programTokens.length<1){
-		
-		putMessage("ERROR: PREMATURELY met end of input for current program on last line of program.")
-		parseErrors++;
-		return;
-	}*/
-
-	if(parseErrors > 0)
-	{
-		
-		return;
-	}
-
-	else 
-	{     
-        tempcst.addNode("AssignStatement", "branch");
-		putMessage("\t PARSER --> Parsing for [Assign Statement]");
-        tempcst.addNode("ID" , "branch")
-		match(["TOKEN_ID"]);
-        tempcst.endChildren();
-       	if(checkToken() == undefined){
-			prematureEnd = true;
-			return;
-       	}
-		match(["TOKEN_ASSIGN"]);
+function sStatement(){
+		 if (sCurrentToken.type === "TOKEN_PRINT") 
+		 {
+   			sPrint();
+ 		 } 
+    else if (sCurrentToken.type === "TOKEN_ID") 
+    {
         
-		parseExpr();
-        tempcst.endChildren()
-	}
+        sAssignmentStatement();
+    
+    } else if (sCurrentToken.type === "TOKEN_TYPEINT" || sCurrentToken.type === "TOKEN_TYPESTRING" || sCurrentToken.type === "TOKEN_TYPEBOOLEAN") {
+        //goes to variable declarations
+        sVarDecl();
+    //if WHILE
+    } else if (sCurrentToken.type === "TOKEN_WHILE") {
+        //goes to while statements
+        sWhileStatement();
+    //if IF
+    } else if (sCurrentToken.type === "TOKEN_IF") {
+        //goes to if statements
+        sIfStatement();
+    //if LEFT_BRACE
+    } else if (sCurrentToken.type === "TOKEN_LEFTBRACE") {
+        //goes to block
+        sBlock();
+    } 
 }
 
-function parseVarDecl(){
 
-	if(checkToken() == undefined){
-			prematureEnd = true;
-			return;
+function sStatementlist(){
+
+	console.log(sCurrentToken.type)
+		if (sCurrentToken.type === "TOKEN_RIGHTBRACE"){
+
+		}
+		if(sCurrentToken.type === "TOKEN_PRINT" || sCurrentToken.type === "TOKEN_ID" 
+    || sCurrentToken.type === "TOKEN_TYPEINT" || sCurrentToken.type === "TOKEN_TYPESTRING"
+    || sCurrentToken.type === "TOKEN_TYPEBOOLEAN" || sCurrentToken.type === "TOKEN_WHILE" 
+    || sCurrentToken.type === "TOKEN_IF" || sCurrentToken.type === "TOKEN_LEFTBRACE"){
+
+			sStatement();
+			sStatementlist()
+		}
+}
+
+function sPrint(){
+		ast.addNode("Print" , "branch");
+
+		sGetToken();
+		if(sCurrentToken.type === "TOKEN_LEFTPAREN")
+			sGetToken();
+
+		sExpr();
+		if(sCurrentToken.type === "TOKEN_RIGHTPAREN")
+			sGetToken();
+
+
+		ast.endChildren();
+}
+
+
+function sAssignmentStatement(){
+		ast.addNode("AssignStatement", "branch")
+
+
+		if(sCurrentToken.type === "TOKEN_ID"){
+				sID();
 		}
 
 
+		if(sCurrentToken.type === "TOKEN_ASSIGN"){
 
-	/*if(programTokens.length<1){
-		
-		putMessage("ERROR: PREMATURELY met end of input for current program on last line of program.")
-		parseErrors++;
-		return;
-	}*/
+			sGetToken()
+			sExpr();
+		}
 
-	if(parseErrors > 0)
-	{
-		
-		return;
-	}
+		ast.endChildren();
 
-	else
-	{
-        tempcst.addNode("VarDecl", "branch")
-		putMessage("\t PARSER --> Parsing for [Variable Declaration]");
-        tempcst.addNode("Type", "branch")
-		match(["TOKEN_TYPEINT", "TOKEN_TYPEBOOLEAN", "TOKEN_TYPESTRING"]);
-        tempcst.endChildren();
-        tempcst.addNode("ID", "branch");
-        if(checkToken() == undefined){
-        	prematureEnd = true;
-			return;
-        }
-		match(["TOKEN_ID"]);
-        tempcst.endChildren()
-         tempcst.endChildren();
-	}
-   
+
 }
 
-function parseWhileStatement(){
 
-	if(checkToken() == undefined){
-			prematureEnd = true;
-			return;
+function sVarDecl(){
+
+		ast.addNode("VarDecl", "branch");
+
+		sGetToken();
+
+		if(sCurrentToken.type ==="TOKEN_ID"){
+			sID();
+
 		}
 
 
-	/*if(programTokens.length<1){
-		
-		putMessage("ERROR: PREMATURELY met end of input for current program on last line of program.")
-		parseErrors++;
-		return;
-	}*/
+		ast.endChildren();
+}
 
 
-	if(parseErrors > 0){
-		
-		return;
+function sWhileStatement(){
+	ast.addNode("WhileStatement", "branch");
+	sGetToken();
+	if(sCurrentToken.type === "TOKEN_LEFTPAREN" || sCurrentToken.type === "TOKENBOOLFALSE" || sCurrentToken.type ==="TOKEN_BOOLTRUE"){
+		sBooleanExpr();
+		sGetToken();
+		sBlock();
 	}
 
-	else
-	{
-        tempcst.addNode("WhileStatement", "branch")
-		putMessage("\t PARSER --> Parsing for [While Statement]");
-		match(["TOKEN_WHILE"]);
-		parseBooleanExpr();
-		parseBlock();
-        tempcst.endChildren()
+	ast.endChildren();
+}
+
+
+function sIfStatement (){
+	ast.addNode("If Statement", "branch");
+
+	sGetToken();
+	if(sCurrentToken.type === "TOKEN_LEFTPAREN" || sCurrentToken.type === "TOKENBOOLFALSE" || sCurrentToken.type ==="TOKEN_BOOLTRUE"){
+
+		sBooleanExpr();
+		sGetToken();
+		sBlock();
+	}
+
+
+
+	ast.endChildren();
+}
+
+
+function sExpr(){
+	if(sCurrentToken.type ==="TOKEN_DIGIT")
+		sIntExpr();
+
+	else if(sCurrentToken.type ==="TOKEN_QUOTE")
+		sStringExpr();
+	else if (sCurrentToken.type ==="TOKEN_LEFTPAREN" || sCurrentToken.type ==="TOKEN_BOOLTRUE" || sCurrentToken.type === "TOKEN_BOOLFALSE")
+		sBooleanExpr();
+	else if(sCurrentToken.type ==="TOKEN_ID")
+		sID();
+}
+
+
+function sIntExpr(){
+			
+			
+		if(sTokens[0].type ==="TOKEN_INTOP"){
+			ast.addNode("Addition", "branch");
+			
+		}
+		/*if(sTokens[0]=== "TOKEN_INTOP"){
+			sGetToken();
+			sExpr();
+
+			//ast.endChildren();
+		} */
+
+		sID();
+
+		if(sCurrentToken.type === "TOKEN_INTOP"){
+			console.log("PLEASE")
+
+			sGetToken();
+			sExpr();
+			ast.endChildren();
+		}
+
+}
+
+
+function sStringExpr(){
+	if(sCurrentToken.type === "TOKEN_QUOTE")
+			sGetToken();
+
+		var word =sCharlist();
+
+	if(sCurrentToken.type === "TOKEN_QUOTE"){
+		ast.addNode(word, "leaf")
+		sGetToken();
 	}
 }
 
-function parseIfStatement(){
 
-	if(checkToken() == undefined){
-		prematureEnd = true;
-		return;
+function sID(){
+
+	if(sCurrentToken.type === "TOKEN_ID" ){
 	}
-			
-
-
-	/*if(programTokens.length<1){
-		
-		putMessage("ERROR: PREMATURELY met end of input for current program on last line of program.")
-		parseErrors++;
-		return;
-	}*/
-
-	if(parseErrors > 0)
-	{
-		
-
-		return;
-	}
-
-	else
-	{
-        tempcst.addNode("If Statement", "branch")
-		putMessage("\t PARSER --> Parsing for [If Statement]");
-		match(["TOKEN_IF"]);
-		parseBooleanExpr();
-		parseBlock();
-        tempcst.endChildren()
-	}
-}
-
-function match(expectedToken){
-
-	 /*if(programTokens.length <1){
-			putMessage("\t PARSER --> ERROR: Expecting [" + expectedToken + "] but ran out of tokens")
-			
-			parseErrors++;
-			return;
-
-	  }*/
-	 if(checkToken() == undefined){
-			putMessage("\t PARSER --> ERROR: Expecting [" + expectedToken + "] but ran out of tokens")
-			prematureEnd = true;
-			
-			return;
-
-	  }
-
-	getToken();
-
+		ast.addNode(sCurrentToken.value, "leaf");
+		sGetToken();
 	
 
-	if(parseErrors > 0)
-	{
-		return;
-	}
-	else
-	{
-		putMessage("\t PARSER --> Expecting one of the following [" + expectedToken + "]")
-
-
-		if (expectedToken.includes(currentToken.type)){
-			putMessage("\t PARSER --> GREAT! got [" + expectedToken + "] (s) as expected");
-			tempcst.addNode(currentToken.value, "leaf");
-			
-		}
-		
-		else if(!expectedToken.includes(currentToken.type))
-		{
-			putMessage("% !**ERROR: Received  [" + currentToken.type + "] instead of expected [" + expectedToken + "] on line:" + currentToken.line + " column:" + currentToken.colNumber, 'color:red');
-			parseErrors++;
-		
-		}
-
-
-		
-	}
 }
 
+
+function sCharlist(){ // +_+
+
+	var r = sCurrentToken.value;
+	sGetToken();
+
+	if(sCurrentToken.type === "TOKEN_CHAR")
+		return r+sCharlist();
+	else
+		return r;
+}
+
+
+function sBooleanExpr(){
+
+	if(sCurrentToken.type === "TOKEN_BOOLTRUE" || sCurrentToken.type === "TOKENBOOLFALSE")
+	{
+		sID();
+	}
+
+	if(sCurrentToken.type ==="TOKEN_LEFTPAREN")
+	{                 
+
+		sGetToken();
+		var closeOut = false;
+
+		if(sTokens[0].type === "TOKEN_ISEQUAL")
+		{
+			ast.addNode("isEqual", "branch")
+			closeOut = true;
+		}
+
+		
+		else if(sTokens[0].type ==="TOKEN_NOTEQUAL")
+		{
+			ast.addNode("notEqual", "branch")
+			closeOut = true;
+				
+		}
+
+		sExpr();
+
+
+
+		if(sCurrentToken.type === "TOKEN_NOTEQUAL" || sCurrentToken.type === "TOKEN_ISEQUAL"){
+			sGetToken();
+			sExpr();
+		}
+
+
+		/*if (ast.cur.children.length >= 2) {
+            for (var i = 0; i < (ast.cur.children.length-1); i++) {
+                console.log("before check")
+                if (ast.cur.children[i].type == "ID" && ast.cur.children[i+1].type == "ID") {
+                    if (getVarType(ast.cur.children[i].name, st.cur) != getVarType(ast.cur.children[i+1].name, st.cur)) {
+                        //increases errors
+                        aErrors++;
+                        //outputs error
+                        analysisLog("ERROR! ID [ "+ast.cur.children[i].name+" ] on line "+ast.cur.children[i].line+" type [ "+getVarType(ast.cur.children[i].name, st.cur)+" ] cannot be compared to [ "+getVarType(ast.cur.children[i+1].name, st.cur)+" ]...");
+                    }
+                }
+            }
+        } */
+        
+		
+}
+		if(sCurrentToken.type === "TOKEN_RIGHTPAREN")
+			sGetToken();
+
+		if(closeOut)
+			ast.endChildren();
+}
