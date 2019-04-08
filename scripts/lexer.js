@@ -585,7 +585,7 @@ var programs
                
                
                 copy = tokenArray.slice(0);
-                console.log(copy)
+               
                 sTokens = tokenArray;
 				lexPtr = 0;
 				//line++; //this was causing faulty line count
@@ -600,18 +600,9 @@ var programs
 				parseErrors = errors;
                 errors = 0;
 				
-                //sProgram(tokenArray);
-                    console.log(sTokens)
-                    //sProgram(copy);
+               
 				parseProgram();
-                    sProgram(copy);
-                    
-                        
-                   // sProgram(tokenArray);
-                    // /console.log(sTokens)
-                
-				
-				//console.log(match(["TOKEN_LEFTBRACE	"]))
+                sProgram(copy)
 
 
 
