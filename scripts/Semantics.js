@@ -1,3 +1,35 @@
+//WHAT TO WORRY ABOUT FOR EACH STATEMENT
+
+/*
+	VARDECL
+	________
+
+	-Error if variable not declared
+
+
+	ASSIGNSTATEMENT
+	____
+
+	-type checking (int a cannot be assigned to a string)
+	-make sure variable declared first!
+
+
+	Print Statement
+	______
+
+	-make sure variable declared first
+	-type check (print statemnt allows digit + Expr )
+
+	IF / WHILE STATEMENT
+
+	-make sure variable declared first
+	-type checking
+
+		BED TIME (:
+
+
+*/
+
 
 var sTokens;
 var symbolMap;
@@ -15,11 +47,50 @@ var ast;
 var scopelvl = -1;
 
 function checkIfExists(){
+	//createTable(scopelvl);
 
 }
 
-function checkIfDeclared(id){
+function buildSymbolTable(level, r = "") {
+    //if the current level has symbols
+    if (level.symbols.length > 0) {
+        //for each symbol 
+        for (var i = 0; i < level.symbols.length; i++) {
+            //add row to table
+            r += "<tr><td>" + level.symbols[i].getID() + "</td><td>" + level.symbols[i].getType() + "</td><td>" + level.symbols[i].getScope() + "</td><td>" + level.symbols[i].getLine() + "</td></tr>";
+        }
+    }
+    //If lower level, search there
+    if (level.children != undefined || level.children != null) {
+        //loops through all children
+        for (var j = 0; j < level.children.length; j++) {
+            //calls a search in the lover levels
+            r = buildSymbolTable(level.children[j], r);
+        }
+    }
+    //return table
+    return r;
+} 
+function createTable(lvl){
+	/*var row = "";
+
+	if((lvl.parent!+undefined || lvl.parent!=null) && lvl.symbols.length > 0){
+		for(var i = 0;l i<lvl.symbols.length;i++){
+
+			row+= "<tr><td>" + lvl.symbols[i].getKey() + "</td><td>" + lvl.symbols[i].getType() + "</td><td>" + lvl.symbols[i].getScope() + "</td><td>" + lvl.symbols[i].getLine() + "</td></tr>";
+		}
+		return row;
+	}
+		if(lvl.parent !- undefined || lvl.parent != null){
+			return  createTable(lvl.parent);
+		}*/
+	
+}
+
+function checkIfDeclared(id, level){
 	counter = 0
+	//level = symbolTree.current;
+	//putMessage(buildSymbolTable(symbolTree.current))
 	//for(i = 0; i<symbolTree.current.symbols.length; i++){
 	/*if(symbolTree.current.symbols[i].id === sCurrentToken.value){  //if map already has id at current scope
 				console.log(symbolMap.get(sCurrentToken.value).scope);
@@ -34,7 +105,7 @@ function checkIfDeclared(id){
 				
 				symbolTree.current.symbols.push(new Symbol(sCurrentToken.value, "dummy type", 0, scopelvl, sCurrentToken.line, sCurrentToken.colNumber, true, false));
 			}
-		//}*/
+		//}
 
 		for(i = 0; i< symbolTree.current.symbols.length; i++){
 			if(id == symbolTree.current.symbols[i].getID()){
@@ -46,7 +117,35 @@ function checkIfDeclared(id){
 		if(counter ==0){
 			console.log("Does not exist")
 			symbolTree.current.symbols.push(new Symbol(sCurrentToken.value, "dummy type", 0, scopelvl, sCurrentToken.line, sCurrentToken.colNumber, true, false))
-		}
+		}*/
+
+
+		if (level.symbols.length > 0) {
+        //for each symbol 
+        for (var i = 0; i < level.symbols.length; i++) {
+            //add row to table
+            if(id === sCurrentToken.value){
+            	console.log("variable exist" + sCurrentToken.value);
+            	counter++;
+            }
+        }
+    }
+    //If lower level, search there
+    if (level.parent!= undefined || level.parent != null) {
+        //loops through all children
+        for (var j = 0; j < level.children.length; j++) {
+            //calls a search in the lover levels
+              checkIfDeclared(sCurrentToken.value, level.parent);
+        }
+    }
+    	if(counter == 0 ){
+
+				symbolTree.current.symbols.push(new Symbol(sCurrentToken.value, "dummy type", 0, scopelvl, sCurrentToken.line, sCurrentToken.colNumber, true, false));
+
+    	}
+    console.log(counter);
+    //return table
+    //return r;
 }
 function sGetToken(){
 
@@ -179,18 +278,38 @@ function sAssignmentStatement(){
 
 
 function sVarDecl(){
-
+		varFound =false;
+		console.log("BITCH")
 		ast.addNode("VarDecl", "branch");
 		//varType = sCurrentToken.type;
 		sGetToken();
 		
 
 		if(sCurrentToken.type ==="TOKEN_ID"){
-			checkIfDeclared(sCurrentToken.value);
+
+			//if(symbolTree.current.symbols.length >0 ){
+			for(i = 0 ; i< symbolTree.current.symbols.length; i++){
+
+				if(sCurrentToken.value === symbolTree.current.symbols[i].id){
+					console.log("ERROR:This variable already exists" +sCurrentToken.value);
+					varFound = true;
+					//break;
+
+				}
+
+			}
+				//}
+			if(!varFound){
+						console.log("YEET IT AINT HERE" + sCurrentToken.value)
+					symbolTree.current.symbols.push(new Symbol(sCurrentToken.value, "dummy type", 0, scopelvl, sCurrentToken.line, sCurrentToken.colNumber, true, false));
+				}
+			//checkIfDeclared(sCurrentToken.value, symbolTree.current);
 			
 			
-				sID();
+				
+sID();
 		}
+		//sID();
 
 
 		ast.endChildren();

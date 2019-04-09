@@ -14,4 +14,18 @@ constructor(id, type, value, scope, line, column, initialized, used){
 		return this.id;
 	}
 
+	getScope(){
+		return this.scope;
+	}
+
+	getLine(){
+		return this.line;
+	}
+
+	getColumn(){
+		return this.column
+	}
+	getType(){
+		return this.type;
+	}
 }
