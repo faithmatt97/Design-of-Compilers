@@ -25,15 +25,24 @@
 	-make sure variable declared first
 	-type checking
 
-		BED TIME (:
 
-
+	MY NUMERO UNO PROBLEMO
+	 -Currently if variable is not in current scope, it does not exist AT ALL
+	 -Need to recursively check parents for variables, if variable not found in current scope
+	 -I had an idea with the hashmaps but forgot, something like this,
+	 	new symbol hashmaps are only created when entering new scope (Basically if and whilestatements)
+	 	-When we enter new scope we can push symbol map to symbol tree before creating new one. Once we exit out of that scope we can retrieve symbol map for current and continue adding ids as we please
+			-we use these maps to check for variables in parents
+			-bc im tired of writing for loops lmao
+			- tbh this isnt so bad
+			-but thats what i always think and i end up fixing bugs for hours x_x
 */
 
-
+var varType;
 var sTokens;
 var symbolMap;
 var symbolTree;
+var assignee;
 //For Semantic Analysis. Constructing AST from tokens bc traversing non binary tree is giving me a goddamn headache;
 
 //can i do this without creating tree of hashmaps, but simply one big hashmap???
@@ -156,7 +165,7 @@ function sGetToken(){
 }
 
 function sProgram(tokens){
-	symbolMap = new Map();
+	//symbolMap = new Map();
 	symbolTree = new SymbolTree();
 	sTokens = tokens;
 	
@@ -175,6 +184,9 @@ function sProgram(tokens){
 	
 }
 function sBlock(){
+	symbolTree.current.map = new Map(symbolMap);
+	symbolMap = new Map();
+
 scopelvl++;
 	symbolTree.addNode("Scope Level:" + scopelvl, "branch");
 	
@@ -187,11 +199,22 @@ scopelvl++;
     sStatementlist();
 
     if(sCurrentToken.type === "TOKEN_RIGHTBRACE"){
-    	
+    	//symbolTree.current.map.push(symbolMap)// = symbolMap;
     	sGetToken();
     }
+    
+   //symbolTree.current.map= new Map(symbolMap); 
+    console.log(symbolTree.current.map)
+    //symbolTree.current.map.push(symbolMap)
     scopelvl--;
+    //if(symbolTree.current.parent != undefined || symbolTree.current.parent != null){
+    //symbolMap= symbolTree.current.parent.map ; 
+    //console.log(symbolMap)
+//}
+	//console.log(symbolTree.current.parent)
     symbolTree.endChildren();
+     //symbolMap = new Map(symbolTree.current.map) ; 
+    // console.log(symbolMap)
     ast.endChildren();
 }
 
@@ -258,8 +281,15 @@ function sPrint(){
 
 function sAssignmentStatement(){
 		ast.addNode("AssignStatement", "branch")
+		varFound = false;
+		for(i=0; i< symbolTree.current.symbols.length ; i++){
+			if(sCurrentToken.value === symbolTree.current.symbols[i].id)
+				varFound = true;
+				assignee = sCurrentToken;
+		}
 
-
+		if(varFound)
+			//console.log("Found the variable! :thumbsup:")
 		if(sCurrentToken.type === "TOKEN_ID"){
 				sID();
 		}
@@ -279,9 +309,9 @@ function sAssignmentStatement(){
 
 function sVarDecl(){
 		varFound =false;
-		console.log("BITCH")
+		//console.log("BITCH")
 		ast.addNode("VarDecl", "branch");
-		//varType = sCurrentToken.type;
+		varType = sCurrentToken.type;
 		sGetToken();
 		
 
@@ -300,8 +330,9 @@ function sVarDecl(){
 			}
 				//}
 			if(!varFound){
-						console.log("YEET IT AINT HERE" + sCurrentToken.value)
-					symbolTree.current.symbols.push(new Symbol(sCurrentToken.value, "dummy type", 0, scopelvl, sCurrentToken.line, sCurrentToken.colNumber, true, false));
+						//console.log("YEET IT AINT HERE" + sCurrentToken.value)
+					symbolTree.current.symbols.push(new Symbol(sCurrentToken.value, varType, 0, scopelvl, sCurrentToken.line, sCurrentToken.colNumber, true, false));
+					symbolMap.set(sCurrentToken.value, new Symbol(sCurrentToken.value, varType, 0, scopelvl, sCurrentToken.line, sCurrentToken.colNumber, true, false))
 				}
 			//checkIfDeclared(sCurrentToken.value, symbolTree.current);
 			
@@ -347,15 +378,56 @@ function sIfStatement (){
 
 
 function sExpr(){
-	if(sCurrentToken.type ==="TOKEN_DIGIT")
+	tempType = "";
+	console.log(varType)
+	if(sCurrentToken.type ==="TOKEN_DIGIT"){ //if the token after = is digit then check if the id is an int, if not give error message. If int then proceed. 
+		if(varType != "TOKEN_TYPEINT")
+			//console.log("Mixmatched types")
 		sIntExpr();
+	}
 
-	else if(sCurrentToken.type ==="TOKEN_QUOTE")
+	else if(sCurrentToken.type ==="TOKEN_QUOTE"){ //if the token after = is quote then check if the id is a string, if not give error message. If type string then proceed.
+		if(varType != "TOKEN_TYPESTRING")
+			//console.log("Mixmatched types");
 		sStringExpr();
-	else if (sCurrentToken.type ==="TOKEN_LEFTPAREN" || sCurrentToken.type ==="TOKEN_BOOLTRUE" || sCurrentToken.type === "TOKEN_BOOLFALSE")
+	}
+	else if (sCurrentToken.type ==="TOKEN_LEFTPAREN" || sCurrentToken.type ==="TOKEN_BOOLTRUE" || sCurrentToken.type === "TOKEN_BOOLFALSE"){ //same as above but with bool
+		if(varType != "TOKEN_TYPEBOOLEAN")
+			//console.log("Mixmatched types");
+
 		sBooleanExpr();
-	else if(sCurrentToken.type ==="TOKEN_ID")
+	}
+
+
+
+	else if(sCurrentToken.type ==="TOKEN_ID"){  //We need to fetch this id and compare their types. If they're the same, proceed. If not, issue error message. But first we need to check if this id exists
+		varFound = false;
+		
+		for(i = 0; i<symbolTree.current.symbols.length; i++){
+			if(sCurrentToken.value === symbolTree.current.symbols[i].id){ //if variable already declared
+				
+				tempType = symbolTree.current.symbols[i].type;
+				varFound = true;
+				console.log("The type is " + tempType);
+				console.log("We're going to compare it to this type " + varType)
+			}
+
+			if(assignee.value === symbolTree.current.symbols[i].id)      //if assignee and assignment IDs are same type, set 
+				varType = symbolTree.current.symbols[i].type;
+		}
+
+
+		if(!varFound)
+			console.log("Unable to find ID [" + sCurrentToken.value  + "] on line:" + sCurrentToken.line + " column:" + sCurrentToken.colNumber)
+		else if(varType !=tempType)
+			console.log("Variable types mismatch. Trying to assign ID [" + assignee.value  +"] of type [" + varType +  "] to ID [" + sCurrentToken.value + "] of type [" +  tempType + "]")
+		else if(varFound && varType=== tempType)
 		sID();
+
+		else
+			console.log("Either variable was not found or mixmatched types")
+		
+	}
 }
 
 

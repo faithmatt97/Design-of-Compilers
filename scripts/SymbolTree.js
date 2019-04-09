@@ -1,11 +1,13 @@
 function SymbolTree(){
 	this.root = null;
 	this.current ={};
+  
 	this.addNode = function(name, branchType, symbols){
 		var node = {
 			name: name,
 			parent: {},
-            symbols: [],
+      symbols: [],
+      map: new Map(),
 			children:  [] 
 
 
