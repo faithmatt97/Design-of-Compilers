@@ -25,17 +25,31 @@
 	-make sure variable declared first
 	-type checking
 
+     TODO
 
-	MY NUMERO UNO PROBLEMO
-	 -Currently if variable is not in current scope, it does not exist AT ALL
-	 -Need to recursively check parents for variables, if variable not found in current scope
-	 -I had an idea with the hashmaps but forgot, something like this,
-	 	new symbol hashmaps are only created when entering new scope (Basically if and whilestatements)
-	 	-When we enter new scope we can push symbol map to symbol tree before creating new one. Once we exit out of that scope we can retrieve symbol map for current and continue adding ids as we please
-			-we use these maps to check for variables in parents
-			-bc im tired of writing for loops lmao
-			- tbh this isnt so bad
-			-but thats what i always think and i end up fixing bugs for hours x_x
+     *Scope checking seems to be in play, shoutout to Chris' Sonar. Saved me before i had a stroke
+     Var Declaration only applies to current scope, not parents so we're guuci
+
+     All we have to do now is type check, which seems easy in theory but there are some funky stuff
+     		right type checking for assignment works
+
+     we can add strings to strings, but can we add strings to ints?
+
+     boolean + boolean
+     boolean + ints? since bools are just 0's and 1's but do i wanna do that to myself
+     wasnt this gone over in class 
+
+
+     CANNOT DO THE FOLLOWING
+
+     string = string + string
+     boolean = boolean + boolean
+
+     int = int + int + p
+
+     overall just worry about in declarations
+
+	 
 */
 var sErrors;
 var motherfucker
@@ -61,39 +75,88 @@ function printShit(treeLevel){
 	}
 }
 
+function getValueofID(id,level){
+	if ((level.parent != undefined || level.parent != null) && level.symbols.length > 0) {
+        //finds the ID
+        for (var i = 0; i < level.symbols.length; i++) {
+            //when the correct ID is found
+            if (id == level.symbols[i].getID()) {
+                
+                return level.symbols[i];
+            }
+        }
+    }
+    //If higher level, search there
+    if (level.parent != undefined || level.parent != null) {
+        //calls a search in the higher levels
+        return getValueofID(id, level.parent);
+    }
+    //or doesn't
+    return -1;
 
+}
 
-
-function varSearchParentScope(id, treeLevel){
-	if(treeLevel.parent.symbols.length == 0)
-	
-		console.log(treeLevel.parent.symbols)
-	//console.log(treeLevel.parent.parent)
-
-	for(var i = 0; i<treeLevel.parent.symbols.length; i++){
+function varSearchParentScope(id, level){
+	/*
+if ((treeLevel.parent != undefined || treeLevel.parent != null) && treeLevel.symbols.length > 0) {
+	for(var i = 0; i<treeLevel.symbols.length; i++){
 		
-		console.log("Printing all values..." + treeLevel.parent.symbols[i].id )
+		console.log("Printing all values..." + treeLevel.symbols[i].id )
 
-		if(id == treeLevel.parent.symbols[i].getID()){
+		if(id == treeLevel.symbols[i].getID()){
 			console.log("HELLOOOOOO")
+			
 			return true;
 		}
 	}
 
-	if(treeLevel.parent != undefined || treeLevel.parent != null){
+
+	}
+
+
+
+    	
+	 if((treeLevel.parent != undefined || treeLevel.parent != null)){
 		console.log("AGAIN AND AGAIN")
 		varSearchParentScope(id, treeLevel.parent)
 	}
+
+
 	return false;
 
+*/
+
+
+   //if the current level has symbols
+    if ((level.parent != undefined || level.parent != null) && level.symbols.length > 0) {
+        //finds the ID
+        for (var i = 0; i < level.symbols.length; i++) {
+            //when the correct ID is found
+            if (id == level.symbols[i].getID()) {
+                //returns true
+                return true;
+            }
+        }
+    }
+    //If higher level, search there
+    if (level.parent != undefined || level.parent != null) {
+        //calls a search in the higher levels
+        return varSearchParentScope(id, level.parent);
+    }
+    //or doesn't
+    return false;
+
 }
+
 function varSearchCurrentScope(id){
+	if(symbolTree.current.symbols.length >0){ 
 	for(i = 0; i<symbolTree.current.symbols.length; i++){
 		if(sCurrentToken.value === symbolTree.current.symbols[i].id){
 			
 			return true;
 		}
 	}
+}
 	return false;
 }
 
@@ -354,13 +417,15 @@ function sAssignmentStatement(){
 			console.log(sCurrentToken.value + " could not be found in current scope. Checking parents...")
 			if(varSearchParentScope(sCurrentToken.value, symbolTree.current.parent))
 				console.log(sCurrentToken.value  +" has been found in parent scope")
-			else
+			else{
 				console.log("Error: ["+sCurrentToken.value+ "] could not be found in parent scope")
+				console.log(varSearchParentScope(sCurrentToken.value, symbolTree.current.parent))
+			}
 		}
 		else
 			console.log("variable [" +sCurrentToken.value +"] could not be found in both current and parent scope(s)")
 		
-		for(i=0; i< symbolTree.current.parent.symbols.length ; i++){
+		for(i=0; i< symbolTree.current.symbols.length ; i++){
 			
 			if(sCurrentToken.value === symbolTree.current.symbols[i].id)
 				varFound = true;
@@ -375,7 +440,7 @@ function sAssignmentStatement(){
 
 
 		if(sCurrentToken.type === "TOKEN_ASSIGN"){
-
+              console.log("BEEEEEEEEEEEP")
 			sGetToken()
 			//console.log("Assign statement HERE ")
 			sExpr();
@@ -399,29 +464,22 @@ function sVarDecl(){
 		if(sCurrentToken.type ==="TOKEN_ID"){
 				
 
-				for(i = 0; i<symbolTree.current.symbols.length;i++){
-					if(sCurrentToken.value === symbolTree.current.symbols[i].id){
+				for(i = 0; i<symbolTree.current.symbols.length;i++)
+				{
+					if(sCurrentToken.value === symbolTree.current.symbols[i].id)
+					{
 						varFound =true;
-					console.log("YOU STUPID ASS BITCH ILL KMS")
-				}
+					} 
 					
 				}
-				/*if(varSearchCurrentScope(sCurrentToken.value)){
-					console.log("Error: id [" +sCurrentToken.value + "] already declared previously");
-					sErrors++;
-					return;
-				}
-
-				 if(!varSearchCurrentScope(sCurrentToken.value)){
-					symbolTree.current.symbols.push(new Symbol(sCurrentToken.value, varType, 0, scopelvl, sCurrentToken.line, sCurrentToken.colNumber, true, false))
-					console.log("This is not declared yet: " +sCurrentToken.value)
-					sID();
-				}*/
-				if(varFound){
+				
+				if(varFound)
+				{
 					console.log("ERROR: ["+sCurrentToken.value + "] ALREADY DECLARED")
 				}
 					
-					if(!varFound){
+				if(!varFound)
+					{
 						symbolTree.current.symbols.push(new Symbol(sCurrentToken.value, varType, 0, scopelvl, sCurrentToken.line, sCurrentToken.colNumber, true, false))
 						console.log("Variable has been added" +sCurrentToken.value)
 						sID();
@@ -470,21 +528,23 @@ function sIfStatement (){
 
 function sExpr(){
 	tempType = "";
-	//console.log(sCurrentToken.type + "Sigh")
+	z = getValueofID(assignee.value, symbolTree.current)
+
+	console.log(assignee.value + "Sigh")
 	if(sCurrentToken.type ==="TOKEN_DIGIT"){ //if the token after = is digit then check if the id is an int, if not give error message. If int then proceed. 
-		//if(varType != "TOKEN_TYPEINT")
-			//console.log("Mixmatched types")
+		if(z.type != "TOKEN_TYPEINT")
+			console.log("Mixmatched types. Assignee ["+ assignee.value + "] is type [" + varType+ "] while assignment  [" +sCurrentToken.value +"] is type [" + sCurrentToken.type + "]")
 		sIntExpr();
 	}
 
 	else if(sCurrentToken.type ==="TOKEN_QUOTE"){ //if the token after = is quote then check if the id is a string, if not give error message. If type string then proceed.
-		//if(varType != "TOKEN_TYPESTRING")
-			//console.log("Mixmatched types");
+		if(z.type != "TOKEN_TYPESTRING")
+			console.log("Mixmatched types" + varType + " " + sCurrentToken.type);
 		sStringExpr();
 	}
 	else if (sCurrentToken.type ==="TOKEN_LEFTPAREN" || sCurrentToken.type ==="TOKEN_BOOLTRUE" || sCurrentToken.type === "TOKEN_BOOLFALSE"){ //same as above but with bool
-		//if(varType != "TOKEN_TYPEBOOLEAN")
-			//console.log("Mixmatched types");
+		if(z.type != "TOKEN_TYPEBOOLEAN")
+			console.log("Mixmatched types");
 
 		sBooleanExpr();
 	}
@@ -504,11 +564,23 @@ function sExpr(){
 				return;
 			}*/
 			//console.log("WHERE YOU AT " + sCurrentToken.value)
+			//if(sCurrentToken.type != varType)
+				//console.log("Mixmatched types. Assignee ["+ assignee.value + "] is type [" + varType+ "] while assignment  [" +sCurrentToken.value +"] is type [" + sCurrentToken.type + "]")
+				 a = getValueofID(assignee.value, symbolTree.current)
+				 b = getValueofID(sCurrentToken.value, symbolTree.current)
+				 console.log(a)
+				// if( -1)
+				if(b == -1 )
+					console.log("this id  WAS NOT DECLARED")
+				else if(b.type != a.type)
+					console.log("Mixmatched types. Assignee ["+ assignee.value + "] is type [" + varType+ "] while assignment  [" +sCurrentToken.value +"] is type [" + b.type + "]")
 			check = varSearchCurrentScope(sCurrentToken.value)
 			if(scopelvl > 0){
 					parentcheck =varSearchParentScope(sCurrentToken.value, symbolTree.current.parent)
 			if(check){
 				console.log("The variable [" +sCurrentToken.value + "] is within current scope")
+				 b = getValueofID(sCurrentToken.value, symbolTree.current)
+				console.log(b.type)
 				//sID();
 			}
 
@@ -520,12 +592,18 @@ function sExpr(){
 
 			if(parentcheck ){
 				console.log("The variable [" +sCurrentToken.value + "] is within parent scope")
+				b = getValueofID(sCurrentToken.value, symbolTree.current)
+				console.log(b.type)
 				//sID();
 				//return;
 			}
 			 else if(!parentcheck){
 				console.log("ERROR: The variable [" +sCurrentToken.value + "] was not found within parent scope")
 				return;
+			}
+
+			if(parentcheck ||check){
+
 			}
 }
 			sID();
