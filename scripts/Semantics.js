@@ -38,6 +38,7 @@
 			-but thats what i always think and i end up fixing bugs for hours x_x
 */
 var sErrors;
+var motherfucker
 var varType;
 var sTokens;
 var symbolMap;
@@ -54,6 +55,48 @@ var sErrors=0;
 var sWarnings = 0;
 var ast;
 var scopelvl = -1;
+function printShit(treeLevel){
+	for(var i = 0; i<treeLevel.symbols.length; i++){
+		console.log("Printing all values..." + treeLevel.symbols[i].id )
+	}
+}
+
+
+
+
+function varSearchParentScope(id, treeLevel){
+	if(treeLevel.parent.symbols.length == 0)
+	
+		console.log(treeLevel.parent.symbols)
+	//console.log(treeLevel.parent.parent)
+
+	for(var i = 0; i<treeLevel.parent.symbols.length; i++){
+		
+		console.log("Printing all values..." + treeLevel.parent.symbols[i].id )
+
+		if(id == treeLevel.parent.symbols[i].getID()){
+			console.log("HELLOOOOOO")
+			return true;
+		}
+	}
+
+	if(treeLevel.parent != undefined || treeLevel.parent != null){
+		console.log("AGAIN AND AGAIN")
+		varSearchParentScope(id, treeLevel.parent)
+	}
+	return false;
+
+}
+function varSearchCurrentScope(id){
+	for(i = 0; i<symbolTree.current.symbols.length; i++){
+		if(sCurrentToken.value === symbolTree.current.symbols[i].id){
+			
+			return true;
+		}
+	}
+	return false;
+}
+
 
 
 
@@ -77,10 +120,7 @@ function searchForVar(id, level) {
     //or doesn't
     return false;
 }
-function checkIfExists(){
-	//createTable(scopelvl);
 
-}
 
 function buildSymbolTable(level, r = "") {
     //if the current level has symbols
@@ -202,9 +242,10 @@ function sProgram(tokens){
 	//console.log(sCurrentToken.type)
 	sBlock();
 	ast.endChildren
-	console.log(ast.toString())
+	//console.log(ast.toString())
 	console.log(symbolMap)
 	console.log(symbolTree	)
+
 	
 	
 }
@@ -287,9 +328,9 @@ function sStatementlist(){
 
 function sPrint(){
 		ast.addNode("Print" , "branch");
-		console.log("In sPrint anf got: " +sCurrentToken.type)
+		//console.log("In sPrint anf got: " +sCurrentToken.type)
 		sGetToken();
-		console.log("In sPrint anf got: " +sCurrentToken.type)
+		//console.log("In sPrint anf got: " +sCurrentToken.type)
 		if(sCurrentToken.type === "TOKEN_LEFTPAREN")
 			sGetToken();
 
@@ -305,7 +346,22 @@ function sPrint(){
 function sAssignmentStatement(){
 		ast.addNode("AssignStatement", "branch")
 		varFound = false;
-		for(i=0; i< symbolTree.current.symbols.length ; i++){
+		
+		if(varSearchCurrentScope(sCurrentToken.value)){
+			console.log(sCurrentToken.value + " has been found in current scope")
+				}
+		else if(!varSearchCurrentScope(sCurrentToken.value) ){
+			console.log(sCurrentToken.value + " could not be found in current scope. Checking parents...")
+			if(varSearchParentScope(sCurrentToken.value, symbolTree.current.parent))
+				console.log(sCurrentToken.value  +" has been found in parent scope")
+			else
+				console.log("Error: ["+sCurrentToken.value+ "] could not be found in parent scope")
+		}
+		else
+			console.log("variable [" +sCurrentToken.value +"] could not be found in both current and parent scope(s)")
+		
+		for(i=0; i< symbolTree.current.parent.symbols.length ; i++){
+			
 			if(sCurrentToken.value === symbolTree.current.symbols[i].id)
 				varFound = true;
 				assignee = sCurrentToken;
@@ -321,8 +377,9 @@ function sAssignmentStatement(){
 		if(sCurrentToken.type === "TOKEN_ASSIGN"){
 
 			sGetToken()
+			//console.log("Assign statement HERE ")
 			sExpr();
-			console.log("Error checking ")
+			//console.log("Assign statement ")
 		}
 
 		ast.endChildren();
@@ -332,37 +389,45 @@ function sAssignmentStatement(){
 
 
 function sVarDecl(){
-		varFound =false;
-		//console.log("BITCH")
+		varFound= false;
 		ast.addNode("VarDecl", "branch");
 		varType = sCurrentToken.type;
 		sGetToken();
-		console.log("In var decl " +sCurrentToken.type)
-
+		
+		//console.log("In var decl " +sCurrentToken.type +" "+ sCurrentToken.value)
+		
 		if(sCurrentToken.type ==="TOKEN_ID"){
-				/*
-			//if(symbolTree.current.symbols.length >0 ){
-			for(i = 0 ; i< symbolTree.current.symbols.length; i++){
+				
 
-				if(sCurrentToken.value === symbolTree.current.symbols[i].id){
-					console.log("ERROR:This variable already exists" +sCurrentToken.value);
-					varFound = true;
-					//break;
-
+				for(i = 0; i<symbolTree.current.symbols.length;i++){
+					if(sCurrentToken.value === symbolTree.current.symbols[i].id){
+						varFound =true;
+					console.log("YOU STUPID ASS BITCH ILL KMS")
+				}
+					
+				}
+				/*if(varSearchCurrentScope(sCurrentToken.value)){
+					console.log("Error: id [" +sCurrentToken.value + "] already declared previously");
+					sErrors++;
+					return;
 				}
 
-			}
-				//}
-			if(!varFound){
-						//console.log("YEET IT AINT HERE" + sCurrentToken.value)
-					symbolTree.current.symbols.push(new Symbol(sCurrentToken.value, varType, 0, scopelvl, sCurrentToken.line, sCurrentToken.colNumber, true, false));
-					symbolMap.set(sCurrentToken.value, new Symbol(sCurrentToken.value, varType, 0, scopelvl, sCurrentToken.line, sCurrentToken.colNumber, true, false))
+				 if(!varSearchCurrentScope(sCurrentToken.value)){
+					symbolTree.current.symbols.push(new Symbol(sCurrentToken.value, varType, 0, scopelvl, sCurrentToken.line, sCurrentToken.colNumber, true, false))
+					console.log("This is not declared yet: " +sCurrentToken.value)
+					sID();
 				}*/
-			//checkIfDeclared(sCurrentToken.value, symbolTree.current);
+				if(varFound){
+					console.log("ERROR: ["+sCurrentToken.value + "] ALREADY DECLARED")
+				}
+					
+					if(!varFound){
+						symbolTree.current.symbols.push(new Symbol(sCurrentToken.value, varType, 0, scopelvl, sCurrentToken.line, sCurrentToken.colNumber, true, false))
+						console.log("Variable has been added" +sCurrentToken.value)
+						sID();
+					}
+
 			
-			
-				
-sID();
 		}
 		//sID();
 
@@ -405,7 +470,7 @@ function sIfStatement (){
 
 function sExpr(){
 	tempType = "";
-	console.log(varType)
+	//console.log(sCurrentToken.type + "Sigh")
 	if(sCurrentToken.type ==="TOKEN_DIGIT"){ //if the token after = is digit then check if the id is an int, if not give error message. If int then proceed. 
 		//if(varType != "TOKEN_TYPEINT")
 			//console.log("Mixmatched types")
@@ -438,7 +503,31 @@ function sExpr(){
 				sErrors++;
 				return;
 			}*/
+			//console.log("WHERE YOU AT " + sCurrentToken.value)
+			check = varSearchCurrentScope(sCurrentToken.value)
+			if(scopelvl > 0){
+					parentcheck =varSearchParentScope(sCurrentToken.value, symbolTree.current.parent)
+			if(check){
+				console.log("The variable [" +sCurrentToken.value + "] is within current scope")
+				//sID();
+			}
 
+			 else if(!check){
+				console.log("The variable [" +sCurrentToken.value + "] was not found within current scope. Checking parents")
+				//return//parentcheck=varSearchParentScope(sCurrentToken.value, symbolTree.current.parent)
+
+			}
+
+			if(parentcheck ){
+				console.log("The variable [" +sCurrentToken.value + "] is within parent scope")
+				//sID();
+				//return;
+			}
+			 else if(!parentcheck){
+				console.log("ERROR: The variable [" +sCurrentToken.value + "] was not found within parent scope")
+				return;
+			}
+}
 			sID();
 
 		/*for(i = 0; i<symbolTree.current.symbols.length; i++){
@@ -513,7 +602,7 @@ function sStringExpr(){
 
 
 function sID(){
-		console.log("in sID() and got: " +sCurrentToken.type)
+		//console.log("in sID() and got: " +sCurrentToken.type)
 	if(sCurrentToken.type === "TOKEN_ID" ){
 	}
 		ast.addNode(sCurrentToken.value, "leaf");
@@ -536,7 +625,7 @@ function sCharlist(){ // +_+
 
 
 function sBooleanExpr(){
-		console.log("In bool expr and got: " +sCurrentToken.type)
+		//console.log("In bool expr and got: " +sCurrentToken.type)
 	if(sCurrentToken.type === "TOKEN_BOOLTRUE" || sCurrentToken.type === "TOKENBOOLFALSE")
 	{
 		sID();
