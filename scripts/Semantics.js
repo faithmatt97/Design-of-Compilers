@@ -1,30 +1,7 @@
 //WHAT TO WORRY ABOUT FOR EACH STATEMENT
 
 /*
-	VARDECL
-	________
-
-	-Error if variable not declared
-
-
-	ASSIGNSTATEMENT
-	____
-
-	-type checking (int a cannot be assigned to a string)
-	-make sure variable declared first!
-
-
-	Print Statement
-	______
-
-	-make sure variable declared first
-	-type check (print statemnt allows digit + Expr )
-
-	IF / WHILE STATEMENT
-
-	-make sure variable declared first
-	-type checking
-
+	
      TODO
 
      *Scope checking seems to be in play, shoutout to Chris' Sonar. Saved me before i had a stroke
@@ -32,25 +9,14 @@
 
      All we have to do now is type check, which seems easy in theory but there are some funky stuff
      		right type checking for assignment works
+		
+		boolean expr are kicking my ass
 
-     we can add strings to strings, but can we add strings to ints?
-
-     boolean + boolean
-     boolean + ints? since bools are just 0's and 1's but do i wanna do that to myself
-     wasnt this gone over in class 
-
-
-     CANNOT DO THE FOLLOWING
-
-     string = string + string
-     boolean = boolean + boolean
-
-     int = int + int + p
-
-     overall just worry about in declarations
+     
 
 	 
 */
+var comingFromAssignStatement
 var sErrors;
 var motherfucker
 var varType;
@@ -301,18 +267,20 @@ function sProgram(tokens){
 
 	ast = new Tree();
 	ast.addNode("Program");
+	console.log("SEMANTIC ANALYSIS --> Analyzing Program: " + programCount)
 	sGetToken();
-	//console.log(sCurrentToken.type)
+	
 	sBlock();
 	ast.endChildren
-	//console.log(ast.toString())
-	console.log(symbolMap)
+	
+	console.log("SEMANTIC ANALYSIS --> ANALYSIS COMPLETE" )
 	console.log(symbolTree	)
 
 	
 	
 }
 function sBlock(){
+	console.log("SEMANTIC ANALYSIS --> Analyzing Block")
 	symbolTree.current.map = new Map(symbolMap);
 	symbolMap = new Map();
 
@@ -320,8 +288,11 @@ function sBlock(){
 	symbolTree.addNode("Scope Level:" + scopelvl, "branch");
 	
 	ast.addNode("Block" , "branch");
+	console.log(sTokens[1])
+
 	if (sCurrentToken.type === "TOKEN_LEFTBRACE") {
         sGetToken();
+        console.log(sCurrentToken)
         
 	}
 
@@ -333,7 +304,7 @@ function sBlock(){
     }
     
  
-    console.log(symbolTree.toString() )
+    
     scopelvl--;
 
 
@@ -342,6 +313,7 @@ function sBlock(){
 }
 
 function sStatement(){
+	console.log("SEMANTIC ANALYSIS --> Analyzing Statement")
 		 if (sCurrentToken.type === "TOKEN_PRINT") 
 		 {
    			sPrint();
@@ -373,7 +345,7 @@ function sStatement(){
 
 function sStatementlist(){
 
-	
+	console.log("SEMANTIC ANALYSIS --> Analyzing StatementList")
 		if (sCurrentToken.type === "TOKEN_RIGHTBRACE"){
 
 		}
@@ -390,6 +362,8 @@ function sStatementlist(){
 }
 
 function sPrint(){
+	console.log("SEMANTIC ANALYSIS --> Analyzing Print Statement")
+
 		ast.addNode("Print" , "branch");
 		//console.log("In sPrint anf got: " +sCurrentToken.type)
 		sGetToken();
@@ -407,6 +381,8 @@ function sPrint(){
 
 
 function sAssignmentStatement(){
+	console.log("SEMANTIC ANALYSIS --> Analyzing Assign Statement")
+		comingFromAssignStatement = true;
 		ast.addNode("AssignStatement", "branch")
 		varFound = false;
 		
@@ -440,9 +416,28 @@ function sAssignmentStatement(){
 
 
 		if(sCurrentToken.type === "TOKEN_ASSIGN"){
-              console.log("BEEEEEEEEEEEP")
-			sGetToken()
-			//console.log("Assign statement HERE ")
+              console.log("The var type we're keeping track of is " + varType)
+              		sGetToken()
+              console.log("And we want to compare it to " +sCurrentToken.type)
+			
+			if(sCurrentToken.type === "TOKEN_LEFTPAREN" || sCurrentToken.type === "TOKENBOOLFALSE" || sCurrentToken.type ==="TOKEN_BOOLTRUE"){
+				if(varType != "TOKEN_TYPEBOOLEAN")
+					console.log("Mixmatched types. Assignee ["+ assignee.value + "] is type [" + varType+ "] while assignment  [" +sCurrentToken.value +"] is type [" + sCurrentToken.type + "]")
+			}
+
+			else if(sCurrentToken.type === "TOKEN_DIGIT"){
+				if(varType != "TOKEN_TYPEINT")
+					console.log("Mixmatched types. Assignee ["+ assignee.value + "] is type [" + varType+ "] while assignment  [" +sCurrentToken.value +"] is type [" + sCurrentToken.type + "]")
+			}
+
+			else if(sCurrentToken.type === "TOKEN_QUOTE"){
+				if(varType != "TOKEN_TYPESTRING")
+					console.log("Mixmatched types. Assignee ["+ assignee.value + "] is type [" + varType+ "] while assignment  [" +sCurrentToken.value +"] is type [" + sCurrentToken.type + "]")
+			}
+			else if(sCurrentToken.type ==="TOKEN_ID"){
+				console.log("filler")
+				//fetch id type and compare to varType, if not the same error, else continue 
+			}
 			sExpr();
 			//console.log("Assign statement ")
 		}
@@ -454,6 +449,7 @@ function sAssignmentStatement(){
 
 
 function sVarDecl(){
+	console.log("SEMANTIC ANALYSIS --> Analyzing VarDecl")
 		varFound= false;
 		ast.addNode("VarDecl", "branch");
 		varType = sCurrentToken.type;
@@ -481,7 +477,7 @@ function sVarDecl(){
 				if(!varFound)
 					{
 						symbolTree.current.symbols.push(new Symbol(sCurrentToken.value, varType, 0, scopelvl, sCurrentToken.line, sCurrentToken.colNumber, true, false))
-						console.log("Variable has been added" +sCurrentToken.value)
+						console.log("New variable ["+sCurrentToken.value+"] has been declared on line: " +sCurrentToken.line)
 						sID();
 					}
 
@@ -495,6 +491,7 @@ function sVarDecl(){
 
 
 function sWhileStatement(){
+	console.log("SEMANTIC ANALYSIS --> Analyzing While Statement")
 	ast.addNode("WhileStatement", "branch");
 	sGetToken();
 	if(sCurrentToken.type === "TOKEN_LEFTPAREN" || sCurrentToken.type === "TOKENBOOLFALSE" || sCurrentToken.type ==="TOKEN_BOOLTRUE"){
@@ -508,9 +505,10 @@ function sWhileStatement(){
 
 
 function sIfStatement (){
+	console.log("SEMANTIC ANALYSIS --> Analyzing If Statement")
 	ast.addNode("If Statement", "branch");
 	symbolTree.addNode("Scope Level: " + (scopelvl+1), "branch")
-	console.log(scopelvl)
+	
 
 	sGetToken();
 	if(sCurrentToken.type === "TOKEN_LEFTPAREN" || sCurrentToken.type === "TOKENBOOLFALSE" || sCurrentToken.type ==="TOKEN_BOOLTRUE"){
@@ -527,24 +525,25 @@ function sIfStatement (){
 
 
 function sExpr(){
+	console.log("SEMANTIC ANALYSIS --> Analyzing Expr")
 	tempType = "";
-	z = getValueofID(assignee.value, symbolTree.current)
+	//z = getValueofID(assignee.value, symbolTree.current)
 
-	console.log(assignee.value + "Sigh")
+	//console.log(assignee.value + "Sigh")
 	if(sCurrentToken.type ==="TOKEN_DIGIT"){ //if the token after = is digit then check if the id is an int, if not give error message. If int then proceed. 
-		if(z.type != "TOKEN_TYPEINT")
-			console.log("Mixmatched types. Assignee ["+ assignee.value + "] is type [" + varType+ "] while assignment  [" +sCurrentToken.value +"] is type [" + sCurrentToken.type + "]")
+		//if(z.type != "TOKEN_TYPEINT")
+			//console.log("Mixmatched types. Assignee ["+ assignee.value + "] is type [" + varType+ "] while assignment  [" +sCurrentToken.value +"] is type [" + sCurrentToken.type + "]")
 		sIntExpr();
 	}
 
 	else if(sCurrentToken.type ==="TOKEN_QUOTE"){ //if the token after = is quote then check if the id is a string, if not give error message. If type string then proceed.
-		if(z.type != "TOKEN_TYPESTRING")
-			console.log("Mixmatched types" + varType + " " + sCurrentToken.type);
+		//if(z.type != "TOKEN_TYPESTRING")
+			//console.log("Mixmatched types" + varType + " " + sCurrentToken.type);
 		sStringExpr();
 	}
 	else if (sCurrentToken.type ==="TOKEN_LEFTPAREN" || sCurrentToken.type ==="TOKEN_BOOLTRUE" || sCurrentToken.type === "TOKEN_BOOLFALSE"){ //same as above but with bool
-		if(z.type != "TOKEN_TYPEBOOLEAN")
-			console.log("Mixmatched types");
+		//if(z.type != "TOKEN_TYPEBOOLEAN")
+			//console.log("Mixmatched types");
 
 		sBooleanExpr();
 	}
@@ -566,7 +565,7 @@ function sExpr(){
 			//console.log("WHERE YOU AT " + sCurrentToken.value)
 			//if(sCurrentToken.type != varType)
 				//console.log("Mixmatched types. Assignee ["+ assignee.value + "] is type [" + varType+ "] while assignment  [" +sCurrentToken.value +"] is type [" + sCurrentToken.type + "]")
-				 a = getValueofID(assignee.value, symbolTree.current)
+				 /*a = getValueofID(assignee.value, symbolTree.current)
 				 b = getValueofID(sCurrentToken.value, symbolTree.current)
 				 console.log(a)
 				// if( -1)
@@ -605,7 +604,7 @@ function sExpr(){
 			if(parentcheck ||check){
 
 			}
-}
+}*/
 			sID();
 
 		/*for(i = 0; i<symbolTree.current.symbols.length; i++){
@@ -640,7 +639,7 @@ function sExpr(){
 
 
 function sIntExpr(){
-			
+		console.log("SEMANTIC ANALYSIS --> Analyzing Int Expr")
 			
 		if(sTokens[0].type ==="TOKEN_INTOP"){
 			ast.addNode("Addition", "branch");
@@ -667,6 +666,7 @@ function sIntExpr(){
 
 
 function sStringExpr(){
+	console.log("SEMANTIC ANALYSIS --> Analyzing String Expr")
 	if(sCurrentToken.type === "TOKEN_QUOTE")
 			sGetToken();
 
@@ -680,18 +680,20 @@ function sStringExpr(){
 
 
 function sID(){
+	console.log("SEMANTIC ANALYSIS --> Analyzing ID")
 		//console.log("in sID() and got: " +sCurrentToken.type)
 	if(sCurrentToken.type === "TOKEN_ID" ){
 	}
 		ast.addNode(sCurrentToken.value, "leaf");
 		sGetToken();
+		console.log(sCurrentToken.type + "LOOK OUT")
 	
 
 }
 
 
 function sCharlist(){ // +_+
-
+	console.log("SEMANTIC ANALYSIS --> Analyzing CharList")
 	var r = sCurrentToken.value;
 	sGetToken();
 
@@ -703,7 +705,10 @@ function sCharlist(){ // +_+
 
 
 function sBooleanExpr(){
+	console.log("SEMANTIC ANALYSIS --> Analyzing Boolean Expr")
 		//console.log("In bool expr and got: " +sCurrentToken.type)
+		var first;
+		var second;
 	if(sCurrentToken.type === "TOKEN_BOOLTRUE" || sCurrentToken.type === "TOKENBOOLFALSE")
 	{
 		sID();
@@ -713,6 +718,10 @@ function sBooleanExpr(){
 	{                 
 
 		sGetToken();
+		first = getValueofID(sCurrentToken.value, symbolTree.current)
+		if(sCurrentToken.type ==="TOKEN_ID" && first == -1){
+			console.log("ERROR: variable [" +sCurrentToken.value+ "] used before declared." )
+		}
 		var closeOut = false;
 
 		if(sTokens[0].type === "TOKEN_ISEQUAL")
@@ -728,36 +737,37 @@ function sBooleanExpr(){
 			closeOut = true;
 				
 		}
-			console.log("In bool expr and got: " +sCurrentToken.type)
+			//console.log("In bool expr and got: " +sCurrentToken.type)
 		sExpr();
 
 
 
 		if(sCurrentToken.type === "TOKEN_NOTEQUAL" || sCurrentToken.type === "TOKEN_ISEQUAL"){
+
 			sGetToken();
-			sExpr();
+			if(sCurrentToken.type === "TOKEN_ID")
+			{
+				console.log("In Boolean expr and 2nd expr is ID")
+				second = getValueofID(sCurrentToken.value, symbolTree.current)
+				if(second == -1){
+
+					console.log("ERROR: variable [" +sCurrentToken.value+ "] used before declared." )
 		}
-
-
-		/*if (ast.cur.children.length >= 2) {
-            for (var i = 0; i < (ast.cur.children.length-1); i++) {
-                console.log("before check")
-                if (ast.cur.children[i].type == "ID" && ast.cur.children[i+1].type == "ID") {
-                    if (getVarType(ast.cur.children[i].name, st.cur) != getVarType(ast.cur.children[i+1].name, st.cur)) {
-                        //increases errors
-                        aErrors++;
-                        //outputs error
-                        analysisLog("ERROR! ID [ "+ast.cur.children[i].name+" ] on line "+ast.cur.children[i].line+" type [ "+getVarType(ast.cur.children[i].name, st.cur)+" ] cannot be compared to [ "+getVarType(ast.cur.children[i+1].name, st.cur)+" ]...");
-                    }
-                }
-            }
-        } */
-        
+				 if(second.type != first.type){
+					console.log("ERROR: Mixmatched types in boolean expr")
+				}
+		    }
+			sExpr();
+		}    
 		
 }
-		if(sCurrentToken.type === "TOKEN_RIGHTPAREN")
+		if(sCurrentToken.type === "TOKEN_RIGHTPAREN"){
+			console.log("*")
 			sGetToken();
+		}
 
 		if(closeOut)
 			ast.endChildren();
+
+
 }
