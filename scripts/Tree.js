@@ -1,12 +1,15 @@
 function Tree(){
 	this.root = null;
 	this.current ={};
-	this.addNode = function(name, branchType,type){
+	this.addNode = function(name, branchType,type, line, column){
 		var node = {
 			name: name,
 			parent: {},
 			children:  [],
-            type: type
+            type: type,
+            line: line,
+            column: column,
+            unique: line + " " + column
 
 
 		}

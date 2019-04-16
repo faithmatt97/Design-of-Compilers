@@ -31,6 +31,7 @@
 
 	 
 */
+var boolArray = []
 var comingFromAssignStatement
 var sErrors;
 var motherfucker
@@ -276,7 +277,7 @@ function sProgram(tokens){
 	varFound = false;
 	symbolTree = new SymbolTree();
 	sTokens = tokens;
-	
+	boolArray = []
 	sToken = tokens;
 	//console.log(sTokens)
 
@@ -290,11 +291,13 @@ function sProgram(tokens){
 	
 	//console.log("SEMANTIC ANALYSIS --> ANALYSIS COMPLETE" )
 	console.log(ast.toString())
+	console.log(ast)
 
 	
 	
 }
 function sBlock(){
+	checkBool(boolArray)
 	//console.log("SEMANTIC ANALYSIS --> Analyzing Block")
 	symbolTree.current.map = new Map(symbolMap);
 	symbolMap = new Map();
@@ -499,6 +502,7 @@ function sVarDecl(){
 
 function sWhileStatement(){
 	//console.log("SEMANTIC ANALYSIS --> Analyzing While Statement")
+	boolArray = []
 	ast.addNode("WhileStatement", "branch");
 	sGetToken();
 	if(sCurrentToken.type === "TOKEN_LEFTPAREN" || sCurrentToken.type === "TOKEN_BOOLFALSE" || sCurrentToken.type ==="TOKEN_BOOLTRUE"){
@@ -513,6 +517,7 @@ function sWhileStatement(){
 
 function sIfStatement (){
 	//console.log("SEMANTIC ANALYSIS --> Analyzing If Statement")
+	boolArray = []
 	ast.addNode("If Statement", "branch");
 	symbolTree.addNode("Scope Level: " + (scopelvl+1), "branch")
 	
@@ -676,13 +681,15 @@ function sIntExpr(){
 
 function sStringExpr(){
 	//console.log("SEMANTIC ANALYSIS --> Analyzing String Expr")
-	if(sCurrentToken.type === "TOKEN_QUOTE")
+	if(sCurrentToken.type === "TOKEN_QUOTE"){
+		 endQuote = false;
 			sGetToken();
+		}
 
 		var word =sCharlist();
 
-	if(sCurrentToken.type === "TOKEN_QUOTE"){
-		ast.addNode(word, "leaf", "string")
+	if(sCurrentToken.type === "TOKEN_QUOTE" && endQuote){
+		ast.addNode(word, "leaf", "string", sCurrentToken.line, sCurrentToken.colNumber)
 		sGetToken();
 	}
 }
@@ -693,31 +700,36 @@ function sID(){
 		//console.log("in sID() and got: " +sCurrentToken.type)
 	if(sCurrentToken.type === "TOKEN_ID" ){
 	}
-		ast.addNode(sCurrentToken.value, "leaf", sCurrentToken.type);
+		ast.addNode(sCurrentToken.value, "leaf", sCurrentToken.type, sCurrentToken.line, sCurrentToken.colNumber);
 		sGetToken();
 		//console.log(sCurrentToken.type + "LOOK OUT")
 	
 
 }
-
+var endQuote = false;
 
 function sCharlist(){ // +_+
 	//console.log("SEMANTIC ANALYSIS --> Analyzing CharList")
 	var r = sCurrentToken.value;
+	//var doneQuote = false
 	sGetToken();
 
 	if( (sCurrentToken.type === "TOKEN_CHAR") || (sCurrentToken.type ==="TOKEN_SPACE"))
 		return r+sCharlist();
-	else
+	else{
+		endQuote = true
 		return r;
+	}
 }
 
 
 function sBooleanExpr(){
-	//console.log("SEMANTIC ANALYSIS --> Analyzing Boolean Expr")
+	console.log("SEMANTIC ANALYSIS --> Analyzing Boolean Expr")
 		//console.log("In bool expr and got: " +sCurrentToken.type)
 		var first;
 		var second;
+		//var boolArray = []
+		var trackedtype;
 	if(sCurrentToken.type === "TOKEN_BOOLTRUE" || sCurrentToken.type === "TOKEN_BOOLFALSE")
 	{
 		sID();
@@ -730,9 +742,12 @@ function sBooleanExpr(){
 		
 		
 		if(sCurrentToken.type ==="TOKEN_ID"){
+			//console.log(ast.current.children[0].name + " CHINKY WHAT")
 				if(getValueofID(sCurrentToken.value, symbolTree.current) == -1)
 			console.log("ERROR: variable [" +sCurrentToken.value+ "] used before declared." )
-			first = getValueofID(sCurrentToken.value, symbolTree.current)
+			 first = getValueofID(sCurrentToken.value, symbolTree.current)
+			console.log("WHY WERENT YOU AT ID PRACTICE? "+ sCurrentToken.value)
+
 		}
 		else{
 			first = sCurrentToken.type;
@@ -762,6 +777,11 @@ function sBooleanExpr(){
 			sGetToken();
 
 
+
+			if(sCurrentToken.type != "TOKEN_LEFTPAREN"){
+				console.log(sCurrentToken.type + "WHAT IS IT?")
+				//boolArray.push(sCurrentToken)
+			}
 			/*if(sCurrentToken.type === "TOKEN_ID")
 			{
 				console.log("In Boolean expr and 2nd expr is ID")
@@ -859,14 +879,34 @@ function sBooleanExpr(){
             }
         }*/
 
-        if(ast.current.children.length >=2){
+//console.log("LITTY "+ast.current.children[ast.current.children.length-2].name)
+      
+		
+}
+trackedtype = first
+//console.log(trackedtype)
+
+		if(sCurrentToken.type === "TOKEN_RIGHTPAREN"){
+			//console.log("************FOLLOW THE STARS***********")
+			sGetToken();
+		}
+console.log("BUNNY "+ast.current.children[0].name)
+		if(closeOut)
+			ast.endChildren();
+
+ // if(ast.current.children.length >=2){
+        	
+        	console.log("The tracked type is "+ trackedtype)
         	//console.log("$")
-        	if(ast.current.children[0].type === "TOKEN_ID" ){
+        	/*if(first. === "TOKEN_ID" ){
         		//console.log(ast.current.children[0].name + "HELLLO")
-        		console.log(ast.current.children[0])
-        		console.log(ast.current.children[0])
-        		trackedvar = getValueofID(ast.current.children[0].name, symbolTree.current).type
-   				console.log("!! Comparing values to "+trackedvar)
+        		//console.log(ast.current.children[0])
+        		//console.log(ast.current.children[0])
+        		console.log("Symbol tree length " + symbolTree.current.symbols.length)
+        		console.log("NIGGA WHAT " + symbolTree.current.symbols[0])
+
+        		trackedvar = getValueofID(symbolTree.current.symbols[0], symbolTree.current).type
+   				console.log("** Comparing values to "+trackedvar)
         	}
 
         	else{
@@ -876,17 +916,53 @@ function sBooleanExpr(){
         	}
 
         	
+        		console.log(ast.current.children.length)*/
 
-             for(var i = 1; i < (ast.current.children.length); i++){
+        		//console.log(first.type + "RAJEET")
+             for(var i = 0; i< ast.current.children.length; i++){ 
+             	//console.log(ast.current.children[i].children[0])
+             	//boolArray.push(ast.current.children[i].children[1])
+             	pls = ast.current.children[i].children[0]
+             	//console.log(pls)
+             	//Object.defineProperty(pls, "unique",{
+             			//value: pls.line + " " + pls.column
+             	//});
+             	//boolArray.push(ast.current.children[i].children[0])
              	if(ast.current.children[i].name != "isEqual" && ast.current.children[i].name != "notEqual"){
+             		//console.log(ast.current.children[i])
+             		console.log(i + " MERCY")
+             		//else
+             			//console.log(ast.current.children[i])
+             		
+             		boolArray.push(ast.current.children[i])
+/*go = getValueofID(ast.current.children[i].name, symbolTree.current)
+console.log(go.type + "IKEEEEE " + go.id)
+             		if(first.type ==="TOKEN_TYPEBOOLEAN" || first.type ==="TOKEN_BOOLTRUE" || first.type ==="TOKEN_BOOLFALSE"){
+             			//console.log("Marching to zion " + ast.current.children[i].name)
+             			
+             			
+             			console.log("CHECKING: " + ast.current.children[i].type + " " + ast.current.children[i].name)
+             			if((go.type != "TOKEN_TYPEBOOLEAN") && (go.type != "TOKEN_BOOLFALSE") && (go.type != "TOKEN_BOOLTRUE"))
+             			{
 
-             	console.log(ast.current.children[i])
+             				console.log("ERROR: " + ast.current.children[i].type + " " + ast.current.children[i].name)
+             			}
+             		}
 
 
+
+*/
              }
-                 //  if( (getValueofID(ast.current.children[i].name, symbolTree.current).type) != (getValueofID(ast.current.children[i+1].name, symbolTree.current).type)){
-                   	//	console.log("ERROR")
-                   //}
+
+             else {
+             	for( j = 0; j<ast.current.children[i].children.length; j++)
+             		if(ast.current.children[i].children[j].name!= "isEqual" && (ast.current.children[i].children[j].name!= "notEqual"))
+             	boolArray.push(ast.current.children[i].children[j])
+             }
+
+
+          
+                 
 
 
              }
@@ -894,34 +970,98 @@ function sBooleanExpr(){
 
 
         }
+        
+// end if ast.>2}
+
+function checkBool(boolArray){
+    //removeDuplicates(boolArray, line, column)
+    //console.log(boolArray)
+
+   //console.log(getUnique(boolArray,'column'))
+	boolArrayFinal = getUnique(boolArray,'unique').reverse()//boolArray.reverse().slice(0);
+	
+	var tracking;
+	var compare;
+	okay = boolArrayFinal[0]
+	console.log("AMALEE" + okay)
+	//console.log(boolArrayFinal[0].hasProperty(name))
+	//peek = getValueofID(boolArrayFinal[0].name, symbolTree.current)
+	//if(peek)
+		//tracking = peek.type
+
+	//console.log(tracking + "IM HUNGRY")
+
+	for(i = 0 ; i<boolArrayFinal.length; i++){
+
+		//console.log("vore")
+		console.log(boolArrayFinal[i].name + " xxxx")
+		if(i==0){
+			if(boolArrayFinal[0].type === "string"){
+				console.log("WE GOT A BOOGER") 
+				//boolArrayFinal.shift()
+			}
+			console.log(boolArrayFinal[i].name + " VIAGRA THIS ONE " +boolArrayFinal[0].type)
+			console.log("What's the value here? : " + boolArrayFinal[0].name + "and the type: " +boolArrayFinal[0].type)
+			if(boolArrayFinal[0].type === "TOKEN_ID"){
+			tracking = getValueofID(boolArrayFinal[0].name, symbolTree.current).type
+			console.log(tracking + " YEET " +boolArrayFinal[0].name)
+		}
+			else{
+				tracking = boolArrayFinal[0].type
+				console.log(tracking + "checking for primitives")
+			}
+		}
 		
-}
-		if(sCurrentToken.type === "TOKEN_RIGHTPAREN"){
-			//console.log("************FOLLOW THE STARS***********")
-			sGetToken();
+
+		 if( i> 0 && boolArrayFinal[i].type === "TOKEN_ID")
+			compare = getValueofID(boolArrayFinal[i].name, symbolTree.current).type
+		console.log(getValueofID( "d", symbolTree.current) + "RESULTS: " + boolArrayFinal[i].name)
+		 if( boolArrayFinal[i].type != "TOKEN_ID")
+			compare = boolArrayFinal[i].type
+
+        console.log(getValueofID("e",symbolTree.current).type + "PLEASE AND THANK")
+		console.log("!! Target type is [" + tracking +"]. Got [" +compare +"]")
+		
+		if(tracking === "TOKEN_TYPEBOOLEAN" || tracking === "TOKEN_BOOLTRUE" || tracking === "TOKEN_BOOLFALSE"){
+				if( compare != undefined && compare != "TOKEN_TYPEBOOLEAN" && compare != "TOKEN_BOOLTRUE" && compare != "TOKEN_BOOLFALSE" )
+					console.log("BOOP WRONG TYPES BITCH on line :" + boolArrayFinal[i].line +" column: " +boolArrayFinal[i].column +" " +compare + " " + tracking);
+
 		}
 
-		if(closeOut)
-			ast.endChildren();
+		if(tracking === "TOKEN_TYPESTRING" || tracking === "TOKEN_QUOTE" || tracking === "string"){
+			if(compare != "TOKEN_TYPESTRING" && compare != "TOKEN_QUOTE" && compare != "string" )
+					console.log("BOOP WRONG TYPES BITCH on line :" + boolArrayFinal[i].line +" column: " +boolArrayFinal[i].column +" " +compare + " " + tracking);
+		}
 
+		if(tracking === "TOKEN_DIGIT" || tracking === "TOKEN_TYPEINT"){
+			if(compare != "TOKEN_DIGIT" && compare != "TOKEN_TYPEINT" )
+					console.log("BOOP WRONG TYPES BITCH on line :" + boolArrayFinal[i].line +" column: " +boolArrayFinal[i].column +" " +compare + " " + tracking);
+		}
+		console.log("... " +tracking)
+		console.log(boolArrayFinal[i].name + " owo " + boolArrayFinal[i].type)
+		console.log(boolArrayFinal)
 
+	    
+		
+		//if(boolArrayFinal[i].name != undefined)
+		console.log(boolArrayFinal[i].name + " uwu ")
+	    //else
+	    	//console.log(boolArrayFinal[i].value + " uwu ")
+	}
 }
 
-function getVarType(id,level) {
-    //Gets the type of ID
-    //if symbols exist search 
-    if (level.symbols.length > 0) {
-        for(var i = 0; i < level.symbols.length; i++) {
-            //when the correct ID is found
-            if (id == level.symbols[i].getID()) {
-                //returns the type
-                return level.symbols[i].type;
-            }
-        }
-    }
-    //If higher level, search there
-    if (level.parent != undefined || level.parent != null) {
-        //calls a search in the higher levels
-        return getVarType(id,level.parent);
-    }
+
+function getUnique(arr, index) {
+
+  const unique = arr
+       .map(e => e[index])
+
+       // store the keys of the unique objects
+       .map((e, i, final) => final.indexOf(e) === i && i)
+  
+       // eliminate the dead keys & store unique objects
+      .filter(e => arr[e]).map(e => arr[e]);      
+
+   return unique;
 }
+

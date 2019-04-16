@@ -4,6 +4,7 @@ cst.addNode("Root", "branch")
 var prematureEnd = false
 
 function resetGlobals(){
+	programTokens = []
 	parseErrors = 0;
 	tempcst = new Tree();
 	prematureEnd = false;
