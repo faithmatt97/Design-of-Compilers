@@ -401,6 +401,7 @@ function sPrint(){
 function sAssignmentStatement(){
 	//console.log("SEMANTIC ANALYSIS --> Analyzing Assign Statement")
 		//comingFromAssignStatement = true;
+		boolArray = []
 		ast.addNode("AssignStatement", "branch")
 		varFound = false;
 		
@@ -439,8 +440,8 @@ function sAssignmentStatement(){
               console.log("And we want to compare it to " +sCurrentToken.type)
 			
 			if(sCurrentToken.type === "TOKEN_LEFTPAREN" || sCurrentToken.type === "TOKEN_BOOLFALSE" || sCurrentToken.type ==="TOKEN_BOOLTRUE"){
-				if(varType != "TOKEN_TYPEBOOLEAN")
-					console.log("Mixmatched types. Assignee ["+ assignee.value + "] is type [" + varType+ "] while assignment  [" +sCurrentToken.value +"] is type [" + sCurrentToken.type + "]")
+				//if(varType != "TOKEN_TYPEBOOLEAN")
+					//console.log("Mixmatched types. Assignee ["+ assignee.value + "] is type [" + varType+ "] while assignment  [" +sCurrentToken.value +"] is type [" + sCurrentToken.type + "]")
 			}
 
 			else if(sCurrentToken.type === "TOKEN_DIGIT"){
@@ -459,7 +460,7 @@ function sAssignmentStatement(){
 			sExpr();
 			//console.log("Assign statement ")
 		}
-
+			checkBool(boolArray)
 		ast.endChildren();
 
 
