@@ -27,10 +27,29 @@
 
 		BOOLEXPR I WILL KNOCK UR KNEES IN 
 
+		I realized that all values in bool expr dont have to be the same. There are two groups here. if(a == (b ==c))
+
+		b and c must be equal to one another
+
+		while a must be boolean or either match type b and c
+
+		
+		so i have two arrays. All values except for the final two will be pushed into boolArray while, the other two will be pushed to boolArrayYolo.
+
+			First we'll compare the types in boolArrayYolo, if they do not match then error
+			Next we'll check the objects in boolArray to see if they are type boolean or same as boolArray types.
+
+			GG
+
+
+
      
 
 	 
 */
+var secondBool
+var test
+var boolArrayYolo = []
 var boolArray = []
 var comingFromAssignStatement
 var sErrors;
@@ -292,12 +311,17 @@ function sProgram(tokens){
 	//console.log("SEMANTIC ANALYSIS --> ANALYSIS COMPLETE" )
 	console.log(ast.toString())
 	console.log(ast)
+	console.log(test)
 
 	
 	
 }
 function sBlock(){
-	checkBool(boolArray)
+	if(scopelvl != -1){
+	if(test != undefined && secondBool != undefined)
+	console.log("COTTON CANDY "+test.type +" " + secondBool.type)
+	checkBool(boolArray, test, secondBool)
+}
 	//console.log("SEMANTIC ANALYSIS --> Analyzing Block")
 	symbolTree.current.map = new Map(symbolMap);
 	symbolMap = new Map();
@@ -401,7 +425,7 @@ function sPrint(){
 function sAssignmentStatement(){
 	//console.log("SEMANTIC ANALYSIS --> Analyzing Assign Statement")
 		//comingFromAssignStatement = true;
-		boolArray = []
+		//boolArray = []
 		ast.addNode("AssignStatement", "branch")
 		varFound = false;
 		
@@ -459,8 +483,11 @@ function sAssignmentStatement(){
 			}
 			sExpr();
 			//console.log("Assign statement ")
+			checkBool(boolArray, test, secondBool)
 		}
-			checkBool(boolArray)
+		console.log("COTTON CANDY "+test +" " + secondBool)
+			//
+		//	boolArray =[]
 		ast.endChildren();
 
 
@@ -518,6 +545,8 @@ function sWhileStatement(){
 
 function sIfStatement (){
 	//console.log("SEMANTIC ANALYSIS --> Analyzing If Statement")
+//console.log("COTTON CANDY "+test +" " + secondBool)
+//checkBool(boolArray, test, secondBool)
 	boolArray = []
 	ast.addNode("If Statement", "branch");
 	symbolTree.addNode("Scope Level: " + (scopelvl+1), "branch")
@@ -729,6 +758,7 @@ function sBooleanExpr(){
 		//console.log("In bool expr and got: " +sCurrentToken.type)
 		var first;
 		var second;
+		
 		//var boolArray = []
 		var trackedtype;
 	if(sCurrentToken.type === "TOKEN_BOOLTRUE" || sCurrentToken.type === "TOKEN_BOOLFALSE")
@@ -749,9 +779,12 @@ function sBooleanExpr(){
 			 first = getValueofID(sCurrentToken.value, symbolTree.current)
 			console.log("WHY WERENT YOU AT ID PRACTICE? "+ sCurrentToken.value)
 
+				test = sCurrentToken
+
 		}
 		else{
 			first = sCurrentToken.type;
+			test = sCurrentToken;
 		}
 		var closeOut = false;
 
@@ -777,10 +810,14 @@ function sBooleanExpr(){
 			//console.log("GOT == or !=")
 			sGetToken();
 
+			if(sCurrentToken.type === "TOKEN_ID"){
+				 secondBool= getValueofID(sCurrentToken.value, symbolTree.current)
 
+			}
 
-			if(sCurrentToken.type != "TOKEN_LEFTPAREN"){
+			else if(sCurrentToken.type != "TOKEN_LEFTPAREN"){
 				console.log(sCurrentToken.type + "WHAT IS IT?")
+				secondBool = sCurrentToken
 				//boolArray.push(sCurrentToken)
 			}
 			/*if(sCurrentToken.type === "TOKEN_ID")
@@ -891,6 +928,11 @@ trackedtype = first
 			//console.log("************FOLLOW THE STARS***********")
 			sGetToken();
 		}
+
+		if(sCurrentToken.type === "TOKEN_RIGHTPAREN" && sTokens[0].type != "TOKEN_RIGHTPAREN"){
+			//console.log("************FOLLOW THE STARS***********")
+			checkBool(boolArray, first, secondBool)
+		}
 console.log("BUNNY "+ast.current.children[0].name)
 		if(closeOut)
 			ast.endChildren();
@@ -958,7 +1000,7 @@ console.log(go.type + "IKEEEEE " + go.id)
              else {
              	for( j = 0; j<ast.current.children[i].children.length; j++)
              		if(ast.current.children[i].children[j].name!= "isEqual" && (ast.current.children[i].children[j].name!= "notEqual"))
-             	boolArray.push(ast.current.children[i].children[j])
+             	boolArrayYolo.push(ast.current.children[i].children[j])
              }
 
 
@@ -974,23 +1016,162 @@ console.log(go.type + "IKEEEEE " + go.id)
         
 // end if ast.>2}
 
-function checkBool(boolArray){
+function checkBool(boolArray, firstBool, last){  //first last are last things in boolexpr
     //removeDuplicates(boolArray, line, column)
     //console.log(boolArray)
 
    //console.log(getUnique(boolArray,'column'))
+
+   console.log(boolArrayYolo.length)
 	boolArrayFinal = getUnique(boolArray,'unique').reverse()//boolArray.reverse().slice(0);
-	
+	var tracking2
+	 var firstCheck
+	 var lastCheck
 	var tracking;
 	var compare;
+	var compare2
 	okay = boolArrayFinal[0]
-	console.log("AMALEE" + okay)
+	console.log("AMALEE")
+	console.log(firstBool)
 	//console.log(boolArrayFinal[0].hasProperty(name))
 	//peek = getValueofID(boolArrayFinal[0].name, symbolTree.current)
 	//if(peek)
 		//tracking = peek.type
+		
+    if(firstBool.type === "TOKEN_ID"){
+    		firstCheck = getValueofID(firstBool.value, symbolTree.current)
+    		console.log("WTF WTF TWF")
+    		console.log(firstCheck		)
 
+    }
+
+   else {
+   	console.log("FirstBool is not a tokenID")
+            firstCheck = firstBool
+    }
+
+    if(last.type === "TOKEN_ID")
+    {
+    	lastCheck = getValueofID(last.value, symbolTree.current)
+    	console.log("UGH UGH UGH")
+    	console.log(lastCheck)
+    }
+
+    else 
+    {
+    	lastCheck = last
+    }
+    console.log("DURP***********")
+    console.log(firstCheck.type)
+    console.log(lastCheck)
+
+    if(firstCheck.type === "TOKEN_DIGIT" || firstCheck.type === "TOKEN_TYPEINT"){
+    	console.log("RABBITS")
+    	if(lastCheck.type != "TOKEN_DIGIT" && lastCheck.type != "TOKEN_TYPEINT" )
+    		console.log("Error: Trying to compare type [" + lastCheck.type +"] to type ["  + firstCheck.type + "] on line: " + firstCheck.line)
+    }
+
+     if(firstCheck.type === "TOKEN_QUOTE" || firstCheck.type === "TOKEN_TYPESTRING"){
+     	console.log("RABBITS")
+
+    	if(lastCheck.type != "TOKEN_TYPESTRING" && lastCheck.type != "TOKEN_QUOTE" && lastCheck.type != "string" )
+    		console.log("Error: Trying to compare type [" + lastCheck.type +"] to type ["  + firstCheck.type + "] on line: " + firstCheck.line)
+
+    }
+
+     if(firstCheck.type === "TOKEN_TYPEBOOLEAN" || firstCheck.type === "TOKEN_BOOLTRUE" || firstCheck.type === "TOKEN_BOOLFALSE"){
+    	console.log("RABBITS")
+    	if(lastCheck.type != undefined && lastCheck.type != "TOKEN_TYPEBOOLEAN" && lastCheck.type != "TOKEN_BOOLTRUE" && lastCheck.type != "TOKEN_BOOLFALSE") 
+    		console.log("Error: Trying to compare type [" + lastCheck.type +"] to type ["  + firstCheck.type + "] on line: " + firstCheck.line)
+    }
+    //	console.log("Error: Trying to compare type [" + lastCheck.type +"] to type ["  + firstCheck.type + "] on line: " + firstCheck.line)
+
+
+
+    	for(i = 0; i< boolArrayFinal.length; i++){
+
+
+    		 if(  boolArrayFinal[i].type === "TOKEN_ID")
+    		 {
+    		 	
+				compare2 = getValueofID(boolArrayFinal[i].name, symbolTree.current).type
+				console.log("$$ Comparing tracked type to type: " +compare2 + " " + boolArrayFinal[i].name)
+		    }
+
+			 else if(  boolArrayFinal[i].type != "TOKEN_ID")
+		     {
+				compare2 = boolArrayFinal[i].type
+				console.log("$$ Comparing tracked type to type: " +compare2 + " " + boolArrayFinal[i].name)
+		    }
+
+		    if(firstCheck.type === "TOKEN_DIGIT" || firstCheck.type === "TOKEN_TYPEINT")
+		    {
+    			console.log("RABBITS")
+    			if(compare2 != "TOKEN_DIGIT" && compare2 != "TOKEN_TYPEINT" )
+    			console.log("Error: Trying to compare type [" + compare2 +"] to type ["  + firstCheck.type + "] on line: " + firstCheck.line)
+   		    }
+
+     		if(firstCheck.type === "TOKEN_QUOTE" || firstCheck.type === "TOKEN_TYPESTRING")
+     		{
+     			console.log("RABBITS")
+
+    			if(compare2 != "TOKEN_TYPESTRING" && compare2 != "TOKEN_QUOTE" && compare2 != "string" )
+    				console.log("Error: Trying to compare type [" + compare2 +"] to type ["  + firstCheck.type + "] on line: " + firstCheck.line)
+
+    		}
+
+     		if(firstCheck.type === "TOKEN_TYPEBOOLEAN" || firstCheck.type === "TOKEN_BOOLTRUE" || firstCheck.type === "TOKEN_BOOLFALSE")
+     		{
+    			console.log("RABBITS")
+    			if(compare2 != undefined && compare2 != "TOKEN_TYPEBOOLEAN" && compare2 != "TOKEN_BOOLTRUE" && compare2!= "TOKEN_BOOLFALSE") 
+    				console.log("Error: Trying to compare type [" + compare +"] to type ["  + firstCheck.type + "] on line: " + firstCheck.line)
+    		}
+
+
+    	}
+//}
 	//console.log(tracking + "IM HUNGRY")
+	/*for(i=0; i<boolArrayYolo.length; i++){
+
+		if(i==0){
+			if(boolArrayYolo[0].type ==="TOKEN_ID"){
+				tracking2 = getValueofID(boolArrayYolo[0].name, symbolTree.current).type
+				console.log("$$ Tracked type for final two values is: " + tracking2 + " " + boolArrayYolo[0].name)
+			}
+
+			else{
+				tracking2 = boolArrayYolo[0].type
+				console.log("$$ Tracked type for final two values is: " + tracking2)
+			}
+
+
+		}
+
+		 else if( i== 1 && boolArrayYolo[i].type === "TOKEN_ID"){
+			compare2 = getValueofID(boolArrayYolo[i].name, symbolTree.current).type
+			console.log("$$ Comparing tracked type to type: " +compare2 + " " + boolArrayYolo[i].name)
+		}
+		 else if( i ==1 && boolArrayYolo[i].type != "TOKEN_ID"){
+			compare2 = boolArrayYolo[i].type
+			console.log("$$ Comparing tracked type to type: " +compare2 + " " + boolArrayYolo[i].name)
+
+		}
+
+		else if(i>= 2){
+			break;
+		}*/
+		//console.log("$$ Comparing tracked type to type: " +compare2 + " " + boolArrayYolo[i].name)
+
+
+
+
+
+
+	//} //end for loop
+
+	
+
+
 
 	for(i = 0 ; i<boolArrayFinal.length; i++){
 
