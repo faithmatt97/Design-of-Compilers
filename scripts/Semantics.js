@@ -425,7 +425,7 @@ function sPrint(){
 function sAssignmentStatement(){
 	//console.log("SEMANTIC ANALYSIS --> Analyzing Assign Statement")
 		//comingFromAssignStatement = true;
-		//boolArray = []
+		boolArray = []
 		ast.addNode("AssignStatement", "branch")
 		varFound = false;
 		
@@ -484,7 +484,6 @@ function sAssignmentStatement(){
 			sExpr();
 			//console.log("Assign statement ")
 			checkBool(boolArray, test, secondBool)
-			boolArray = []
 		}
 		console.log("COTTON CANDY "+test +" " + secondBool)
 			//
@@ -1023,7 +1022,7 @@ function checkBool(boolArray, firstBool, last){  //first last are last things in
 
    //console.log(getUnique(boolArray,'column'))
 
-   console.log(boolArrayYolo.length)
+   console.log(boolArray)
 	boolArrayFinal = getUnique(boolArray,'unique').reverse()//boolArray.reverse().slice(0);
 	var tracking2
 	 var firstCheck
@@ -1108,7 +1107,7 @@ function checkBool(boolArray, firstBool, last){  //first last are last things in
 		    if(firstCheck.type === "TOKEN_DIGIT" || firstCheck.type === "TOKEN_TYPEINT")
 		    {
     			console.log("RABBITS")
-    			if(compare2 != "TOKEN_DIGIT" && compare2 != "TOKEN_TYPEINT" )
+    			if( compare2 != undefined && compare2 != "TOKEN_TYPEBOOLEAN" && compare2 != "TOKEN_BOOLTRUE" && compare2!= "TOKEN_BOOLFALSE" && compare2 != "TOKEN_DIGIT" && compare2 != "TOKEN_TYPEINT" )
     			console.log("Error: Trying to compare type [" + compare2 +"] to type ["  + firstCheck.type + "] on line: " + firstCheck.line)
    		    }
 
@@ -1116,7 +1115,7 @@ function checkBool(boolArray, firstBool, last){  //first last are last things in
      		{
      			console.log("RABBITS")
 
-    			if(compare2 != "TOKEN_TYPESTRING" && compare2 != "TOKEN_QUOTE" && compare2 != "string" )
+    			if(compare2 != undefined && compare2 != "TOKEN_TYPEBOOLEAN" && compare2 != "TOKEN_BOOLTRUE" && compare2!= "TOKEN_BOOLFALSE" && compare2 != "TOKEN_TYPESTRING" && compare2 != "TOKEN_QUOTE" && compare2 != "string" )
     				console.log("Error: Trying to compare type [" + compare2 +"] to type ["  + firstCheck.type + "] on line: " + firstCheck.line)
 
     		}
@@ -1174,7 +1173,7 @@ function checkBool(boolArray, firstBool, last){  //first last are last things in
 
 
 
-	for(i = 0 ; i<boolArrayFinal.length; i++){
+	/*for(i = 0 ; i<boolArrayFinal.length; i++){
 
 		//console.log("vore")
 		console.log(boolArrayFinal[i].name + " xxxx")
@@ -1230,7 +1229,8 @@ function checkBool(boolArray, firstBool, last){  //first last are last things in
 		console.log(boolArrayFinal[i].name + " uwu ")
 	    //else
 	    	//console.log(boolArrayFinal[i].value + " uwu ")
-	}
+	}*/
+	boolArray = []
 }
 
 
