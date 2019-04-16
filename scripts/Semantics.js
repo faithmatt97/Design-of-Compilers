@@ -484,6 +484,7 @@ function sAssignmentStatement(){
 			sExpr();
 			//console.log("Assign statement ")
 			checkBool(boolArray, test, secondBool)
+			boolArray = []
 		}
 		console.log("COTTON CANDY "+test +" " + secondBool)
 			//
@@ -931,7 +932,7 @@ trackedtype = first
 
 		if(sCurrentToken.type === "TOKEN_RIGHTPAREN" && sTokens[0].type != "TOKEN_RIGHTPAREN"){
 			//console.log("************FOLLOW THE STARS***********")
-			checkBool(boolArray, first, secondBool)
+			//checkBool(boolArray, first, secondBool)
 		}
 console.log("BUNNY "+ast.current.children[0].name)
 		if(closeOut)
