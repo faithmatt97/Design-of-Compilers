@@ -1,55 +1,7 @@
-//CODE WITH CHECK IF USED FUNCTIONS 
 
-
-//WHAT TO WORRY ABOUT FOR EACH STATEMENT
-
-/*
-	
-     TODO
-
-     *Scope checking seems to be in play, shoutout to Chris' Sonar. Saved me before i had a stroke
-     Var Declaration only applies to current scope, not parents so we're guuci
-
-     All we have to do now is type check, which seems easy in theory but there are some funky stuff
-     		right type checking for assignment works
-		
-		boolean expr are kicking my ass
-
-
-
-		AHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH
-
-		BOOLEAN EXPR I HATE YOU
-
-		WHAT WE DOING NOW
-
-		WE GONNA TRACK A VARIABLE
-
-		IF ANY CHILDREN DO NOT MATCH VARIABLE TYPE RETURN ERROR
-		IDC ABOUT BEING SPECIFIC RN
-
-		BOOLEXPR I WILL KNOCK UR KNEES IN 
-
-		I realized that all values in bool expr dont have to be the same. There are two groups here. if(a == (b ==c))
-
-		b and c must be equal to one another
-
-		while a must be boolean or either match type b and c
-
-		
-		so i have two arrays. All values except for the final two will be pushed into boolArray while, the other two will be pushed to boolArrayYolo.
-
-			First we'll compare the types in boolArrayYolo, if they do not match then error
-			Next we'll check the objects in boolArray to see if they are type boolean or same as boolArray types.
-
-			GG
-
-
-
-     
 
 	 
-*/
+var sWarnings = 0
 var scopeCount = 0
 var callingAllSymbols = []
 var secondBool
@@ -105,35 +57,6 @@ function getValueofID(id,level){
 }
 
 function varSearchParentScope(id, level){
-	/*
-if ((treeLevel.parent != undefined || treeLevel.parent != null) && treeLevel.symbols.length > 0) {
-	for(var i = 0; i<treeLevel.symbols.length; i++){
-		
-		console.log("Printing all values..." + treeLevel.symbols[i].id )
-
-		if(id == treeLevel.symbols[i].getID()){
-			console.log("HELLOOOOOO")
-			
-			return true;
-		}
-	}
-
-
-	}
-
-
-
-    	
-	 if((treeLevel.parent != undefined || treeLevel.parent != null)){
-		console.log("AGAIN AND AGAIN")
-		varSearchParentScope(id, treeLevel.parent)
-	}
-
-
-	return false;
-
-*/
-
 
    //if the current level has symbols
     if ((level.parent != undefined || level.parent != null) && level.symbols.length > 0) {
@@ -213,88 +136,10 @@ function buildSymbolTable(level, r = "") {
     //return table
     return r;
 } 
-function createTable(lvl){
-	/*var row = "";
 
-	if((lvl.parent!+undefined || lvl.parent!=null) && lvl.symbols.length > 0){
-		for(var i = 0;l i<lvl.symbols.length;i++){
-
-			row+= "<tr><td>" + lvl.symbols[i].getKey() + "</td><td>" + lvl.symbols[i].getType() + "</td><td>" + lvl.symbols[i].getScope() + "</td><td>" + lvl.symbols[i].getLine() + "</td></tr>";
-		}
-		return row;
-	}
-		if(lvl.parent !- undefined || lvl.parent != null){
-			return  createTable(lvl.parent);
-		}*/
-	
-}
-
-function checkIfDeclared(id, level){
-	counter = 0
-	//level = symbolTree.current;
-	//putMessage(buildSymbolTable(symbolTree.current))
-	//for(i = 0; i<symbolTree.current.symbols.length; i++){
-	/*if(symbolTree.current.symbols[i].id === sCurrentToken.value){  //if map already has id at current scope
-				console.log(symbolMap.get(sCurrentToken.value).scope);
-				console.log("Error: redeclared variable")    //Error message
-				console.log("It has it");
-				//break;
-			}
-			else{
-
-				
-				symbolMap.set(sCurrentToken.value, new Symbol(sCurrentToken.value, "dummy type", 0, scopelvl, sCurrentToken.line, sCurrentToken.colNumber, true, false));
-				
-				symbolTree.current.symbols.push(new Symbol(sCurrentToken.value, "dummy type", 0, scopelvl, sCurrentToken.line, sCurrentToken.colNumber, true, false));
-			}
-		//}
-
-		for(i = 0; i< symbolTree.current.symbols.length; i++){
-			if(id == symbolTree.current.symbols[i].getID()){
-				console.log('id exists');
-				counter++;
-			}
-		}
-
-		if(counter ==0){
-			console.log("Does not exist")
-			symbolTree.current.symbols.push(new Symbol(sCurrentToken.value, "dummy type", 0, scopelvl, sCurrentToken.line, sCurrentToken.colNumber, true, false))
-		}*/
-
-
-		if (level.symbols.length > 0) {
-        //for each symbol 
-        for (var i = 0; i < level.symbols.length; i++) {
-            //add row to table
-            if(id === sCurrentToken.value){
-            	console.log("variable exist" + sCurrentToken.value);
-            	counter++;
-            }
-        }
-    }
-    //If lower level, search there
-    if (level.parent!= undefined || level.parent != null) {
-        //loops through all children
-        for (var j = 0; j < level.children.length; j++) {
-            //calls a search in the lover levels
-              checkIfDeclared(sCurrentToken.value, level.parent);
-        }
-    }
-    	if(counter == 0 ){
-
-				symbolTree.current.symbols.push(new Symbol(sCurrentToken.value, "dummy type", 0, scopelvl, sCurrentToken.line, sCurrentToken.colNumber, true, false));
-
-    	}
-    console.log(counter);
-    //return table
-    //return r;
-}
 function sGetToken(){
-
 	sCurrentToken = sTokens[0];
 	sTokens.shift();
-
-
 }
 
 function sProgram(tokens){
@@ -326,10 +171,11 @@ function sProgram(tokens){
 		console.log("Semantic Analysis stopped due to errors")
 	}
 	if(sErrors == 0){
-	//console.log("SEMANTIC ANALYSIS --> ANALYSIS COMPLETE" )
+	checkForWarnings(symbolTree.current)
+	console.log("SEMANTIC ANALYSIS --> ANALYSIS COMPLETE Errors:" + sErrors +" Warnings:" +sWarnings)
 	console.log("-----------AST----------------")
 	console.log(ast.toString())
-	checkForWarnings(symbolTree.current)
+	
 	console.log("-----------Scope Table----------")
 printSymbolTable()
 }
@@ -344,6 +190,7 @@ function sBlock(){
 	if(scopelvl != -1){
 	if(test != undefined && secondBool != undefined){
 	//console.log("COTTON CANDY "+test.type +" " + secondBool.type)
+	
 	checkBool(boolArray, test, secondBool)
 	boolArray=[]
 }
@@ -546,16 +393,19 @@ function sAssignmentStatement(){
 			else if(sCurrentToken.type === "TOKEN_DIGIT"){
 				//console.log("Assigning variable ["+sCurrentToken.value + "] to " + typeofAssign.value + "on line: "+ sCurrentToken.line)
 				if(typeofAssign.type != "TOKEN_TYPEINT"){
-					
-					console.log("Mixmatched types. Assignee ["+ typeofAssign.id + "] is type [" + typeofAssign.type+ "] while assignment  [" +sCurrentToken.value +"] is type [" + sCurrentToken.type + "] on line: " +sCurrentToken.line)
+					sErrors++
+					console.log("ERROR: Mixmatched types. Assignee ["+ typeofAssign.id + "] is type [" + typeofAssign.type+ "] while assignment  [" +sCurrentToken.value +"] is type [" + sCurrentToken.type + "] on line: " +sCurrentToken.line)
+					return;
 				}
 			}
 
 			else if(sCurrentToken.type === "TOKEN_QUOTE"){
 				//console.log("Assigning  [string] to " + typeofAssign.value + "on line: "+ sCurrentToken.line)
 				if(typeofAssign.type != "TOKEN_TYPESTRING"){
+					sErrors++
 					console.log(typeofAssign)
-					console.log("Mixmatched types. Assignee ["+ typeofAssign.id + "] is type [" + typeofAssign.type+ "] while assignment  [" +sCurrentToken.value +"] is type [" + sCurrentToken.type + "] on line: " +sCurrentToken.line)
+					console.log("ERROR: Mixmatched types. Assignee ["+ typeofAssign.id + "] is type [" + typeofAssign.type+ "] while assignment  [" +sCurrentToken.value +"] is type [" + sCurrentToken.type + "] on line: " +sCurrentToken.line)
+				   return
 				}
 			}
 			else if(sCurrentToken.type ==="TOKEN_ID"){
@@ -563,12 +413,17 @@ function sAssignmentStatement(){
 				console.log("filler")
 					//fetch id type and compare to varType, if not the same error, else continue 
 				if(getValueofID(sCurrentToken.value,symbolTree.current)== -1){
+					sErrors++
 					console.log("ERROR: variable [" +sCurrentToken.value+ "] used before declared.")
+					return
 				}
 
 				else {
-					if(getValueofID(sCurrentToken.value,symbolTree.current).type != typeofAssign.type)
-						console.log("ERROR ERROR ERROR")
+					if(getValueofID(sCurrentToken.value,symbolTree.current).type != typeofAssign.type){
+						sErrors++
+						console.log("ERROR: Mixmatched types. Assignee ["+ typeofAssign.id + "] is type [" + typeofAssign.type+ "] while assignment  [" +sCurrentToken.value +"] is type [" + getValueofID(sCurrentToken.value,symbolTree.current).type + "] on line: " +sCurrentToken.line)
+						return
+					}
 
 					else {
 						console.log("Assining variable ["+sCurrentToken.value + "] to " + typeofAssign.value + "on line: "+ sCurrentToken.line)
@@ -592,8 +447,11 @@ function sAssignmentStatement(){
 		//console.log("COTTON CANDY "+test +" " + secondBool)
 			//
 		//	boolArray =[]
+		
+	if(boolArray.length>=2){
 		checkBool(boolArray, test, secondBool)
 		boolArray = []
+	}
 		ast.endChildren();
 
 
@@ -1026,6 +884,7 @@ trackedtype = first
              			//console.log(ast.current.children[i])
              		
              		boolArray.push(ast.current.children[i])
+             		setVarToUsed(ast.current.children[i].name, symbolTree.current)
 /*go = getValueofID(ast.current.children[i].name, symbolTree.current)
 console.log(go.type + "IKEEEEE " + go.id)
              		if(first.type ==="TOKEN_TYPEBOOLEAN" || first.type ==="TOKEN_BOOLTRUE" || first.type ==="TOKEN_BOOLFALSE"){
@@ -1047,8 +906,10 @@ console.log(go.type + "IKEEEEE " + go.id)
 
              else {
              	for( j = 0; j<ast.current.children[i].children.length; j++)
-             		if(ast.current.children[i].children[j].name!= "isEqual" && (ast.current.children[i].children[j].name!= "notEqual"))
+             		if(ast.current.children[i].children[j].name!= "isEqual" && (ast.current.children[i].children[j].name!= "notEqual")){
              	boolArrayYolo.push(ast.current.children[i].children[j])
+             setVarToUsed(ast.current.children[i].children[j].name, symbolTree.current)}
+
              }
 
 
@@ -1092,7 +953,7 @@ if(last === undefined){
 }
 		//if(firstBool === undefined)
 			//console.log("undefined first")
-		if(firstBool != undefined &&  last != undefined){
+		if(firstBool != undefined ||  last != undefined){
 			//console.log("MARIO")
     if(firstBool.type === "TOKEN_ID"){
     	//	console.log("LESSSS GET IT" + (getValueofID(firstBool.value, symbolTree.current) > -1))
@@ -1386,6 +1247,7 @@ function checkForWarnings(level){
         for (var i = 0; i < level.symbols.length; i++) {
             //when the correct ID is found
             if (level.symbols[i].used == false) {
+            	sWarnings++;
             	console.log("\t Variable ["+level.symbols[i].id +"]")
                 
                 //level.symbols[i].used = true;
