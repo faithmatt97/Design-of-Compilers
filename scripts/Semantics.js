@@ -1,3 +1,6 @@
+//CODE WITH CHECK IF USED FUNCTIONS 
+
+
 //WHAT TO WORRY ABOUT FOR EACH STATEMENT
 
 /*
@@ -300,6 +303,8 @@ function sProgram(tokens){
 	callingAllSymbols = []
 	sErrors=0;
 	varFound = false;
+	//test = undefined
+	//secondBool = undefined
 	symbolTree = new SymbolTree();
 	sTokens = tokens;
 	boolArray = []
@@ -327,13 +332,16 @@ printSymbolTable()
 	
 }
 function sBlock(){
+	
 	if(sErrors>0){
 				return
 			}
 	if(scopelvl != -1){
-	if(test != undefined && secondBool != undefined)
+	if(test != undefined && secondBool != undefined){
 	//console.log("COTTON CANDY "+test.type +" " + secondBool.type)
 	checkBool(boolArray, test, secondBool)
+	boolArray=[]
+}
 }
 	//console.log("SEMANTIC ANALYSIS --> Analyzing Block")
 	symbolTree.current.map = new Map(symbolMap);
@@ -425,41 +433,65 @@ function sStatementlist(){
 }
 
 function sPrint(){
+	var boolFlag
 	if(sErrors>0){
 				return
 			}
 	//console.log("SEMANTIC ANALYSIS --> Analyzing Print Statement")
 
 		ast.addNode("Print" , "branch");
-		//console.log("In sPrint anf got: " +sCurrentToken.type)
+		
 		sGetToken();
-		//console.log("In sPrint anf got: " +sCurrentToken.type)
+		
 		if(sCurrentToken.type === "TOKEN_LEFTPAREN")
 			sGetToken();
-		console.log("In Print checking token after ( " +sCurrentToken.type)
+		
+		if(sCurrentToken.type ==="TOKEN_ID"){
+			console.log(getValueofID(sCurrentToken.value, symbolTree.current) ==-1 + "SASUKE")
+			if(getValueofID(sCurrentToken.value, symbolTree.current) ==-1){
+				sErrors++
+				console.log("ERROR: variable [" +sCurrentToken.value+ "] used before declared.")
+			}
+
+			else if(getValueofID(sCurrentToken.value, symbolTree.current) !=-1){
+				console.log("NARUTOOOO")
+				setVarToUsed(sCurrentToken.value, symbolTree.current)}
+
+		}
+
+		else if(sCurrentToken.type ==="TOKEN_LEFTPAREN"){
+			boolFlag = true
+		}
 		sExpr();
+		/*if(boolFlag){
+			console.log("AT PRINT CHECKING BOOL ARRAY LENGTH: " + boolArray.length)
+			checkBool(boolArray, test, secondBool)
+			boolFlag = false;
+		}*/
 		if(sCurrentToken.type === "TOKEN_RIGHTPAREN")
 			sGetToken();
 
-
+checkBool(boolArray, test, secondBool)
+boolArray=[]
 		ast.endChildren();
 }
 
 
 function sAssignmentStatement(){
+	enteringBoolean = false;
 	//console.log("SEMANTIC ANALYSIS --> Analyzing Assign Statement")
-		//comingFromAssignStatement = true;
-		//boolArray = []
+		
+		typeofAssign = sCurrentToken
+		
 		ast.addNode("AssignStatement", "branch")
 		varFound = false;
 		
-		if(varSearchCurrentScope(sCurrentToken.value)){
-			console.log(sCurrentToken.value + " has been found in current scope")
-				}
-		else if(!varSearchCurrentScope(sCurrentToken.value) ){
-			console.log(sCurrentToken.value + " could not be found in current scope. Checking parents...")
-			if(varSearchParentScope(sCurrentToken.value, symbolTree.current.parent))
+		
+		
+			if(varSearchParentScope(sCurrentToken.value, symbolTree.current)){
+				typeofAssign = getValueofID(sCurrentToken.value, symbolTree.current)
 				console.log(sCurrentToken.value  +" has been found in parent scope")
+			}
 			else{
 				sErrors++;
 				console.log("ERROR: ["+sCurrentToken.value+ "] used before declared")
@@ -469,9 +501,8 @@ function sAssignmentStatement(){
 			if(sErrors>0){
 				return
 			}
-		}
-		else
-			console.log("variable [" +sCurrentToken.value +"] could not be found in both current and parent scope(s)")
+		
+		
 		
 		for(i=0; i< symbolTree.current.symbols.length ; i++){
 			
@@ -488,39 +519,71 @@ function sAssignmentStatement(){
 
 
 		if(sCurrentToken.type === "TOKEN_ASSIGN"){
-              //console.log("The var type we're keeping track of is " + varType)
-              		sGetToken()
-             // console.log("And we want to compare it to " +sCurrentToken.type)
+             
+             sGetToken()
+            
 			
-			if(sCurrentToken.type === "TOKEN_LEFTPAREN" || sCurrentToken.type === "TOKEN_BOOLFALSE" || sCurrentToken.type ==="TOKEN_BOOLTRUE"){
-				if(varType != "TOKEN_TYPEBOOLEAN"){
+			if(sCurrentToken.type === "TOKEN_LEFTPAREN" ||sCurrentToken.type === "TOKEN_BOOLFALSE" || sCurrentToken.type ==="TOKEN_BOOLTRUE"){
+				
+
+				if(typeofAssign.type != "TOKEN_TYPEBOOLEAN"){
 					sErrors++;
-					console.log("Error: trying to assign non boolean to boolean expr")
+					
+					console.log("Error: trying to assign variable [ " + typeofAssign.id + " ] of type ["+ typeofAssign.type +"] to boolean expr on line: " + sCurrentToken.line)
 					return;
 				}
-
+					console.log(boolArray.length + "YEEEEHAW")
+					//if(boolArray.length>1)
+					//checkBool(boolArray, test, secondBool)
 			}
 
+
 			else if(sCurrentToken.type === "TOKEN_DIGIT"){
-				if(varType != "TOKEN_TYPEINT")
-					console.log("Mixmatched types. Assignee ["+ assignee.value + "] is type [" + varType+ "] while assignment  [" +sCurrentToken.value +"] is type [" + sCurrentToken.type + "]")
+				if(typeofAssign.type != "TOKEN_TYPEINT"){
+					
+					console.log("Mixmatched types. Assignee ["+ typeofAssign.id + "] is type [" + typeofAssign.type+ "] while assignment  [" +sCurrentToken.value +"] is type [" + sCurrentToken.type + "] on line: " +sCurrentToken.line)
+				}
 			}
 
 			else if(sCurrentToken.type === "TOKEN_QUOTE"){
-				if(varType != "TOKEN_TYPESTRING")
-					console.log("Mixmatched types. Assignee ["+ assignee.value + "] is type [" + varType+ "] while assignment  [" +sCurrentToken.value +"] is type [" + sCurrentToken.type + "]")
+				if(typeofAssign.type != "TOKEN_TYPESTRING"){
+					console.log(typeofAssign)
+					console.log("Mixmatched types. Assignee ["+ typeofAssign.id + "] is type [" + typeofAssign.type+ "] while assignment  [" +sCurrentToken.value +"] is type [" + sCurrentToken.type + "] on line: " +sCurrentToken.line)
+				}
 			}
 			else if(sCurrentToken.type ==="TOKEN_ID"){
 				console.log("filler")
-				//fetch id type and compare to varType, if not the same error, else continue 
+					//fetch id type and compare to varType, if not the same error, else continue 
+				if(getValueofID(sCurrentToken.value,symbolTree.current)== -1){
+					console.log("ERROR: variable [" +sCurrentToken.value+ "] used before declared.")
+				}
+
+				else {
+					if(getValueofID(sCurrentToken.value,symbolTree.current).type != typeofAssign.type)
+						console.log("ERROR ERROR ERROR")
+
+					else setVarToUsed(sCurrentToken.value, symbolTree.current)
+				}
+
+
 			}
+
+
 			sExpr();
+			console.log(getUnique(boolArray,'unique').length+" GIDDY UP")
 			//console.log("Assign statement ")
-			checkBool(boolArray, test, secondBool)
+			
+			
+			
+				//checkBool(boolArray, test, secondBool)
+				
+			
 		}
 		//console.log("COTTON CANDY "+test +" " + secondBool)
 			//
 		//	boolArray =[]
+		checkBool(boolArray, test, secondBool)
+		boolArray = []
 		ast.endChildren();
 
 
@@ -598,8 +661,7 @@ function sIfStatement (){
 		sBooleanExpr();
 		sGetToken();
 		sBlock();
-		console.log("WHy are you ending?")
-		//console.log(sCurrentToken.type +"This is at the end of if statement")
+		
 	}
 
 
@@ -611,114 +673,30 @@ function sIfStatement (){
 function sExpr(){
 	//console.log("SEMANTIC ANALYSIS --> Analyzing Expr")
 	tempType = "";
-	//z = getValueofID(assignee.value, symbolTree.current)
-
-	//console.log(assignee.value + "Sigh")
+	
 	if(sCurrentToken.type ==="TOKEN_DIGIT"){ //if the token after = is digit then check if the id is an int, if not give error message. If int then proceed. 
-		//if(z.type != "TOKEN_TYPEINT")
-			//console.log("Mixmatched types. Assignee ["+ assignee.value + "] is type [" + varType+ "] while assignment  [" +sCurrentToken.value +"] is type [" + sCurrentToken.type + "]")
+		
 		sIntExpr();
 	}
 
 	else if(sCurrentToken.type ==="TOKEN_QUOTE"){ //if the token after = is quote then check if the id is a string, if not give error message. If type string then proceed.
-		//if(z.type != "TOKEN_TYPESTRING")
-			//console.log("Mixmatched types" + varType + " " + sCurrentToken.type);
+		
 		sStringExpr();
 	}
 	else if (sCurrentToken.type ==="TOKEN_LEFTPAREN" || sCurrentToken.type ==="TOKEN_BOOLTRUE" || sCurrentToken.type === "TOKEN_BOOLFALSE"){ //same as above but with bool
-		//if(z.type != "TOKEN_TYPEBOOLEAN")
-			//console.log("Mixmatched types");
-
+		
 		sBooleanExpr();
+		//checkBool(boolArray, test, secondBool)
 	}
 
 
 
 	else if(sCurrentToken.type ==="TOKEN_ID"){  //We need to fetch this id and compare their types. If they're the same, proceed. If not, issue error message. But first we need to check if this id exists
-		//varFound = false;
-			
-			/*if(searchForVar(sCurrentToken.value , symbolTree.current)){
-				console.log("variable found: " + sCurrentToken.value)
-				
-			}
-			else{
-				console.log("ERROR: Variable not declared");
-				sErrors++;
-				return;
-			}*/
-			//console.log("WHERE YOU AT " + sCurrentToken.value)
-			//if(sCurrentToken.type != varType)
-				//console.log("Mixmatched types. Assignee ["+ assignee.value + "] is type [" + varType+ "] while assignment  [" +sCurrentToken.value +"] is type [" + sCurrentToken.type + "]")
-				 /*a = getValueofID(assignee.value, symbolTree.current)
-				 b = getValueofID(sCurrentToken.value, symbolTree.current)
-				 console.log(a)
-				// if( -1)
-				if(b == -1 )
-					console.log("this id  WAS NOT DECLARED")
-				else if(b.type != a.type)
-					console.log("Mixmatched types. Assignee ["+ assignee.value + "] is type [" + varType+ "] while assignment  [" +sCurrentToken.value +"] is type [" + b.type + "]")
-			check = varSearchCurrentScope(sCurrentToken.value)
-			if(scopelvl > 0){
-					parentcheck =varSearchParentScope(sCurrentToken.value, symbolTree.current.parent)
-			if(check){
-				console.log("The variable [" +sCurrentToken.value + "] is within current scope")
-				 b = getValueofID(sCurrentToken.value, symbolTree.current)
-				console.log(b.type)
-				//sID();
-			}
-
-			 else if(!check){
-				console.log("The variable [" +sCurrentToken.value + "] was not found within current scope. Checking parents")
-				//return//parentcheck=varSearchParentScope(sCurrentToken.value, symbolTree.current.parent)
-
-			}
-
-			if(parentcheck ){
-				console.log("The variable [" +sCurrentToken.value + "] is within parent scope")
-				b = getValueofID(sCurrentToken.value, symbolTree.current)
-				console.log(b.type)
-				//sID();
-				//return;
-			}
-			 else if(!parentcheck){
-				console.log("ERROR: The variable [" +sCurrentToken.value + "] was not found within parent scope")
-				return;
-			}
-
-			if(parentcheck ||check){
-
-			}
-}*/
+		
 			sID();
 
-		/*for(i = 0; i<symbolTree.current.symbols.length; i++){
-			if(sCurrentToken.value === symbolTree.current.symbols[i].id){ //if variable already declared
-				
-				tempType = symbolTree.current.symbols[i].type;
-				varFound = true;
-				console.log("The type is " + tempType);
-				console.log("We're going to compare it to this type " + varType)
-			}
-
-			if(assignee.value === symbolTree.current.symbols[i].id)      //if assignee and assignment IDs are same type, set 
-				varType = symbolTree.current.symbols[i].type;
-		}
-
-
-		if(!varFound){
-			console.log("Unable to find ID [" + sCurrentToken.value  + "] on line:" + sCurrentToken.line + " column:" + sCurrentToken.colNumber)
-
-			searchForVar()
-		}
-		else if(varType !=tempType)
-			console.log("Variable types mismatch. Trying to assign ID [" + assignee.value  +"] of type [" + varType +  "] to ID [" + sCurrentToken.value + "] of type [" +  tempType + "]")
-		else if(varFound && varType=== tempType)
-		sID();
-
-		else
-			console.log("Either variable was not found or mixmatched types")
-		*/
 	}
+	//checkBool(boolArray, test, secondBool)
 }
 
 
@@ -813,7 +791,7 @@ function sBooleanExpr(){
 		
 		
 		if(sCurrentToken.type ==="TOKEN_ID"){
-			//console.log(ast.current.children[0].name + " CHINKY WHAT")
+			
 				if(getValueofID(sCurrentToken.value, symbolTree.current) == -1){
 					sErrors++;
 					console.log("ERROR: variable [" +sCurrentToken.value+ "] used before declared." )
@@ -824,7 +802,7 @@ function sBooleanExpr(){
 			}
 			
 			 first = getValueofID(sCurrentToken.value, symbolTree.current)
-			console.log("WHY WERENT YOU AT ID PRACTICE? "+ sCurrentToken.value)
+			setVarToUsed(sCurrentToken.value,symbolTree.current)
 
 				test = sCurrentToken
 
@@ -833,6 +811,8 @@ function sBooleanExpr(){
 			first = sCurrentToken.type;
 			test = sCurrentToken;
 		}
+		console.log("OUR FIRST BOOLVAL IS....")
+		console.log(test)
 		var closeOut = false;
 
 		if(sTokens[0].type === "TOKEN_ISEQUAL")
@@ -859,14 +839,25 @@ function sBooleanExpr(){
 
 			if(sCurrentToken.type === "TOKEN_ID"){
 				 secondBool= getValueofID(sCurrentToken.value, symbolTree.current)
+				 if(secondBool == -1){
+				 	sErrors++;
+				 	console.log("ERROR: ["+sCurrentToken.value+ "] used before declared on line: " + sCurrentToken.line)
+				 	return;
+				 }
+
+				 else 
+				 	setVarToUsed(secondBool.value, symbolTree.current)
 
 			}
 
 			else if(sCurrentToken.type != "TOKEN_LEFTPAREN"){
 				//console.log(sCurrentToken.type + "WHAT IS IT?")
 				secondBool = sCurrentToken
+				console.log("OUR NEXT BOOL VAL IS.....")
+				console.log(secondBool)
 				//boolArray.push(sCurrentToken)
 			}
+
 			/*if(sCurrentToken.type === "TOKEN_ID")
 			{
 				console.log("In Boolean expr and 2nd expr is ID")
@@ -1009,7 +1000,7 @@ trackedtype = first
         		console.log(ast.current.children.length)*/
 
         		//console.log(first.type + "RAJEET")
-             for(var i = 0; i< ast.current.children.length; i++){ 
+             for(var i = 1; i< ast.current.children.length; i++){ 
              	//console.log(ast.current.children[i].children[0])
              	//boolArray.push(ast.current.children[i].children[1])
              	pls = ast.current.children[i].children[0]
@@ -1066,7 +1057,9 @@ console.log(go.type + "IKEEEEE " + go.id)
 function checkBool(boolArray, firstBool, last){  //first last are last things in boolexpr
     //removeDuplicates(boolArray, line, column)
     //console.log(boolArray)
-
+    console.log("^^^^^^^^^^^")
+    console.log(firstBool)
+    console.log(last)
    //console.log(getUnique(boolArray,'column'))
 
   // console.log(boolArray)
@@ -1084,11 +1077,22 @@ function checkBool(boolArray, firstBool, last){  //first last are last things in
 	//peek = getValueofID(boolArrayFinal[0].name, symbolTree.current)
 	//if(peek)
 		//tracking = peek.type
-		
+if(last === undefined){
+	console.log("undefined last")
+}
+		if(firstBool === undefined)
+			console.log("undefined first")
+		if(firstBool != undefined &&  last != undefined){
     if(firstBool.type === "TOKEN_ID"){
+    	//	console.log("LESSSS GET IT" + (getValueofID(firstBool.value, symbolTree.current) > -1))
+    		if(getValueofID(firstBool.value, symbolTree.current) == -1){
+    		sErrors++
+    		console.log("ERROR: ["+firstBool.value+ "] used before declared on line: " + firstBool.line)
+    	}
+    	
+    	//console.log("UGH UGH UGH")
+    	else
     		firstCheck = getValueofID(firstBool.value, symbolTree.current)
-    		
-    		//console.log(firstCheck)
 
     }
 
@@ -1099,8 +1103,15 @@ function checkBool(boolArray, firstBool, last){  //first last are last things in
 
     if(last.type === "TOKEN_ID")
     {
-    	lastCheck = getValueofID(last.value, symbolTree.current)
+    	console.log("LESSSS GET IT" + (getValueofID(last.value, symbolTree.current) > -1))
+    	if(getValueofID(last.value, symbolTree.current) == -1){
+    		sErrors++
+    		console.log("ERROR: ["+last.value+ "] used before declared on line: " + last.line)
+    	}
+    	
     	//console.log("UGH UGH UGH")
+    	else
+    		lastCheck = getValueofID(last.value, symbolTree.current)
     	//console.log(lastCheck)
     }
 
@@ -1114,9 +1125,10 @@ function checkBool(boolArray, firstBool, last){  //first last are last things in
 
     if(firstCheck.type === "TOKEN_DIGIT" || firstCheck.type === "TOKEN_TYPEINT"){
     	
-    	if(lastCheck.type != "TOKEN_DIGIT" && lastCheck.type != "TOKEN_TYPEINT" ){
+    	if(lastCheck != undefined && lastCheck.type != "TOKEN_DIGIT" && lastCheck.type != "TOKEN_TYPEINT" ){
     		sErrors++
-    		console.log("Error: Trying to compare type [" + lastCheck.type +"] to type ["  + firstCheck.type + "] on line: " + firstCheck.line)
+    		console.log("Error: Trying to compare type [" + lastCheck.type +"] to type ["  + firstCheck.type + "] on line: " + firstBool.line)
+    		console.log(lastCheck)
     		return;
     	}
     }
@@ -1126,7 +1138,9 @@ function checkBool(boolArray, firstBool, last){  //first last are last things in
 
     	if(lastCheck.type != "TOKEN_TYPESTRING" && lastCheck.type != "TOKEN_QUOTE" && lastCheck.type != "string" ){
     		sErrors++
-    		console.log("Error: Trying to compare type [" + lastCheck.type +"] to type ["  + firstCheck.type + "] on line: " + firstCheck.line)
+
+    		console.log("Error: Trying to compare type [" + lastCheck.type +"] to type ["  + firstCheck.type + "] on line: " + firstBool.line)
+    		console.log(lastCheck)
     		return;
     	}
 
@@ -1136,11 +1150,12 @@ function checkBool(boolArray, firstBool, last){  //first last are last things in
     	
     	if(lastCheck.type != undefined && lastCheck.type != "TOKEN_TYPEBOOLEAN" && lastCheck.type != "TOKEN_BOOLTRUE" && lastCheck.type != "TOKEN_BOOLFALSE") {
     		sErrors++;
-    		console.log("Error: Trying to compare type [" + lastCheck.type +"] to type ["  + firstCheck.type + "] on line: " + firstCheck.line)
+    		console.log("Error: Trying to compare type [" + lastCheck.type +"] to type ["  + firstCheck.type + "] on line: " + firstBool.line)
+    		console.log(lastCheck)
     		return;
     	}
     }
-
+}
     if(sErrors>0){
 				return
 			}
@@ -1151,10 +1166,12 @@ function checkBool(boolArray, firstBool, last){  //first last are last things in
     	for(i = 0; i< boolArrayFinal.length; i++){
 
 
-    		 if(  boolArrayFinal[i].type === "TOKEN_ID")
+    		 if(boolArrayFinal[i].type === "TOKEN_ID")
     		 {
     		 	
 				compare2 = getValueofID(boolArrayFinal[i].name, symbolTree.current).type
+				
+					setVarToUsed(boolArrayFinal[i].name,symbolTree.current)
 				console.log("$$ Comparing tracked type to type: " +compare2 + " " + boolArrayFinal[i].name)
 		    }
 
@@ -1192,7 +1209,7 @@ function checkBool(boolArray, firstBool, last){  //first last are last things in
     			
     			if(compare2 != undefined && compare2 != "TOKEN_TYPEBOOLEAN" && compare2 != "TOKEN_BOOLTRUE" && compare2!= "TOKEN_BOOLFALSE") {
     				sErrors++;
-    				console.log("Error: Trying to compare type [" + compare +"] to type ["  + firstCheck.type + "] on line: " + firstCheck.line)
+    				console.log("Error: Trying to compare type [" + compare2 +"] to type ["  + firstCheck.type + "] on line: " + firstCheck.line)
     				return;
     			}
     		}
@@ -1243,7 +1260,7 @@ function checkBool(boolArray, firstBool, last){  //first last are last things in
 
 
 
-	for(i = 0 ; i<boolArrayFinal.length; i++){
+	/*for(i = 0 ; i<boolArrayFinal.length; i++){
 
 		//console.log("vore")
 		console.log(boolArrayFinal[i].name + " xxxx")
@@ -1299,7 +1316,7 @@ function checkBool(boolArray, firstBool, last){  //first last are last things in
 		console.log(boolArrayFinal[i].name + " uwu ")
 	    //else
 	    	//console.log(boolArrayFinal[i].value + " uwu ")
-	}
+	}*/
 	boolArray = []
 }
 
@@ -1318,3 +1335,51 @@ function getUnique(arr, index) {
    return unique;
 }
 
+function setVarToUsed(id, level){
+
+	if ((level.parent != undefined || level.parent != null) && level.symbols.length > 0) {
+        //finds the ID
+        for (var i = 0; i < level.symbols.length; i++) {
+            //when the correct ID is found
+            console.log("LET ME SLEEP")
+            if (id === level.symbols[i].id) {
+                console.log("HIYA")
+                level.symbols[i].used = true;
+                console.log(level.symbols[i].used + "ONEGAIII")
+				return;
+                 
+                 
+            }
+        }
+    }
+    //If higher level, search there
+    if (level.parent != undefined || level.parent != null) {
+        //calls a search in the higher levels
+        return getValueofID(id, level.parent);
+    }
+    //or doesn't
+}
+
+function checkForWarnings(level){
+
+   if ((level.parent != undefined || level.parent != null) && level.symbols.length > 0) {
+        //finds the ID
+        for (var i = 0; i < level.symbols.length; i++) {
+            //when the correct ID is found
+            if (level.symbols[i].used == false) {
+            	console.log("Variable ["+level.symbols[i].id +"] was not used")
+                
+                //level.symbols[i].used = true;
+				//return;
+                 
+                 
+            }
+        }
+    }
+    //If higher level, search there
+    if (level.parent != undefined || level.parent != null) {
+        //calls a search in the higher levels
+        return checkForWarnings(level.parent);
+    }
+    console.log("Finished checking for warnings")
+}

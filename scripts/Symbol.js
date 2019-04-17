@@ -28,4 +28,9 @@ constructor(id, type, value, scope, line, column, initialized, used){
 	getType(){
 		return this.type;
 	}
+
+	setUsed(bool){
+		this.used = bool
+
+	}
 }

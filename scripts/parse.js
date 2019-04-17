@@ -40,7 +40,7 @@ function LookAhead(){ //checks 2 tokens ahead
 function parseProgram(){  //Everything from here on out is self explanatory 
  	    parseErrors = 0;
  	    prematureEnd = false;
-	putMessage("\nPARSING PROGRAM " + i)
+	putMessage("\nPARSING PROGRAM " + programIncrement)
 	tempcst = new Tree();
 
 	if(parseErrors > 0)     // If we encounter error, stop program
@@ -51,7 +51,7 @@ function parseProgram(){  //Everything from here on out is self explanatory
 
 	else                   // else continue parsing 
 	{
-		tempcst.addNode("Program " + i, "branch");
+		tempcst.addNode("Program " + programIncrement, "branch");
 		putMessage("\t PARSER --> Parsing [Program]");
 		parseBlock()
 		tempcst.endChildren();

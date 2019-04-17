@@ -63,7 +63,7 @@ var quoteColumn;     // ^^^^^
 var programs
     function lex()
     {
-        // Grab the "raw" source programs[i].
+        // Grab the "raw" source programs[programIncrement].
         var sourceCode = document.getElementById("taSourceCode").value;
         // Trim the leading and trailing spaces.
         sourceCode = trim(sourceCode);
@@ -193,24 +193,24 @@ var programs
      if(programs[programs.length-1])
       console.log(programs)
 
-     for(i =0; i<programs.length ; i++){
-     		putMessage("\nLEXING PROGRAM #"+ i);
+     for(programIncrement =0; programIncrement<programs.length ; programIncrement++){
+     		putMessage("\nLEXING PROGRAM #"+ programIncrement);
      		errorInCurrentProgram = false;
      		inComment = false;
      		errors = 0;
             errorCount = 0;
         	inQuotes = false;
-        while(lexPtr < programs[i].length){
+        while(lexPtr < programs[programIncrement].length){
         					//First test to see if we are in a comment. If we are, check to see if there's an END COMMENT token > set incomment flag to false so we can stop ignoring stuff.
 
                       if(inComment)
                         { 
-                          if(regEndComment.test(programs[i].substring(lexPtr, lexPtr+2)))
+                          if(regEndComment.test(programs[programIncrement].substring(lexPtr, lexPtr+2)))
                           {
                              inComment = false;
                              lexPtr++;
                           }
-                          else if(regNewLine.test(programs[i].charAt(lexPtr)))
+                          else if(regNewLine.test(programs[programIncrement].charAt(lexPtr)))
                           	line++;
                             column = 0;
                         }
@@ -219,7 +219,7 @@ var programs
                             //so it's there for a reason. 
                       else if(errorInCurrentProgram){
 
-                        	if(regEOF.test(programs[i].charAt(lexPtr)))
+                        	if(regEOF.test(programs[programIncrement].charAt(lexPtr)))
                             {
                                 putMessage("LEXING of Program #"+ programCount+ " stopped due to error. Warnings:" + warningCount +" errors:" + errors);
                         		errorInCurrentProgram = false; 
@@ -227,14 +227,14 @@ var programs
                                 errors=0;
                         		
                         		warningCount = 0;
-                                if(lexPtr != programs[i].length-1) //check if we're at end of program, if not move onto next. 
+                                if(lexPtr != programs[programIncrement].length-1) //check if we're at end of program, if not move onto next. 
                                 {
                                   programCount++;
                         		  putMessage( "-----  LEXING NEXT PROGRAM #" + programCount + " -----")
                                 }
                         	}
 
-                            else if(regQuote.test(programs[i].charAt(lexPtr))){
+                            else if(regQuote.test(programs[programIncrement].charAt(lexPtr))){
                                 if(inQuotes)
                                     inQuotes = false;
                             }
@@ -242,16 +242,16 @@ var programs
                         }
                         else if(inQuotes)  //If in quotes > spew out tokens for white spaces, CHARS, and QUOTE > else > return error for everything else
                         {
-                            if(regID.test(programs[i].charAt(lexPtr)))
+                            if(regID.test(programs[programIncrement].charAt(lexPtr)))
                             {
-                                addToken("TOKEN_CHAR", programs[i].charAt(lexPtr), line, column);
+                                addToken("TOKEN_CHAR", programs[programIncrement].charAt(lexPtr), line, column);
                                 putMessage(" \t LEXER -->"+tokenArray[tokenArray.length-1].type + " [ "+ 
                                 tokenArray[tokenArray.length-1].value +  " ] line:" + 
                                 tokenArray[tokenArray.length-1].line + " column:" +
                                 tokenArray[tokenArray.length-1].colNumber);
                             }
 
-                            else if(regWhiteSpace.test(programs[i].charAt(lexPtr)))
+                            else if(regWhiteSpace.test(programs[programIncrement].charAt(lexPtr)))
                                 {
                                     addToken("TOKEN_SPACE", " ", line, column)
                                     putMessage(" \t LEXER -->"+tokenArray[tokenArray.length-1].type + " [ "+ 
@@ -259,7 +259,7 @@ var programs
                                     tokenArray[tokenArray.length-1].line + " column:" +
                                     tokenArray[tokenArray.length-1].colNumber);
                                 }
-                            else if(regQuote.test(programs[i].charAt(lexPtr)))
+                            else if(regQuote.test(programs[programIncrement].charAt(lexPtr)))
                             {
                                 addToken("TOKEN_QUOTE", '"', line, column);
                                 putMessage(" \t LEXER -->"+tokenArray[tokenArray.length-1].type + " [ "+ 
@@ -272,10 +272,10 @@ var programs
                                 
                             else {
                                 errors++;
-                                if(regNewLine.test(programs[i].charAt(lexPtr)))
+                                if(regNewLine.test(programs[programIncrement].charAt(lexPtr)))
                                     putMessage("\t ERROR: \\n  is not a char on line: " + line + " column:" + column );
                                 else{
-                                putMessage("\t ERROR: " +programs[i].charAt(lexPtr) + " is not a char on line: " + line + " column:" + column );
+                                putMessage("\t ERROR: " +programs[programIncrement].charAt(lexPtr) + " is not a char on line: " + line + " column:" + column );
                                 }
                                 if(!errorInCurrentProgram){
                                     errorInCurrentProgram = true;
@@ -284,7 +284,7 @@ var programs
                             
                         }
                           //CHECK FOR START COMMENT TOKEN
-                        else if(regStartComment.test(programs[i].substring(lexPtr, lexPtr+2)))
+                        else if(regStartComment.test(programs[programIncrement].substring(lexPtr, lexPtr+2)))
                         {
                            inComment = true;
                            lexPtr++;
@@ -294,7 +294,7 @@ var programs
                     		
                         
                         	//Check for LEFT BRACE token
-                        else if(regLeftBrace.test(programs[i].charAt(lexPtr)))
+                        else if(regLeftBrace.test(programs[programIncrement].charAt(lexPtr)))
                         {
                             addToken("TOKEN_LEFTBRACE", "{", line, column);
                             putMessage(" \t LEXER -->"+tokenArray[tokenArray.length-1].type + " [ "+ 
@@ -303,7 +303,7 @@ var programs
                             	tokenArray[tokenArray.length-1].colNumber);
                         }
                         	//CHECK FOR LEFT PARENTHESIS TOKEN
-                        else if(regLeftParen.test(programs[i].charAt(lexPtr)))
+                        else if(regLeftParen.test(programs[programIncrement].charAt(lexPtr)))
                         {
                             addToken("TOKEN_LEFTPAREN", "(", line, column);
                              putMessage(" \t LEXER -->"+tokenArray[tokenArray.length-1].type + " [ "+ 
@@ -312,7 +312,7 @@ var programs
                             	tokenArray[tokenArray.length-1].colNumber);
                         }
                         	//CHECK FOR RIGHT BRACE TOKEN
-                        else if(regRightBrace.test(programs[i].charAt(lexPtr)))
+                        else if(regRightBrace.test(programs[programIncrement].charAt(lexPtr)))
                         {
                             addToken("TOKEN_RIGHTBRACE", "}", line, column);
                              putMessage(" \t LEXER -->"+tokenArray[tokenArray.length-1].type + " [ "+ 
@@ -321,7 +321,7 @@ var programs
                             	tokenArray[tokenArray.length-1].colNumber);
                         }
                         	//CHECK FOR RIGHT PARENTHESIS TOKEN
-                        else if(regRightParen.test(programs[i].charAt(lexPtr)))
+                        else if(regRightParen.test(programs[programIncrement].charAt(lexPtr)))
                         {
                             addToken("TOKEN_RIGHTPAREN", ")", line, column);
                              putMessage(" \t LEXER -->"+tokenArray[tokenArray.length-1].type + " [ "+ 
@@ -330,7 +330,7 @@ var programs
                             	tokenArray[tokenArray.length-1].colNumber);
                         }
                     		//Check for QUOTE token > anything recognized as ID will be registered as CHAR token 
-                    	else if(regQuote.test(programs[i].charAt(lexPtr)))
+                    	else if(regQuote.test(programs[programIncrement].charAt(lexPtr)))
                     	{      
                         	addToken("TOKEN_QUOTE", '"', line, column);
                         	 putMessage(" \t LEXER -->"+tokenArray[tokenArray.length-1].type + " [ "+ 
@@ -345,9 +345,9 @@ var programs
                             	inQuotes = true;
                     	}
                     		//Check for TRUE keyword
-                     	else if(regBooleanTrue.test(programs[i].substring(lexPtr, lexPtr+4 )))
+                     	else if(regBooleanTrue.test(programs[programIncrement].substring(lexPtr, lexPtr+4 )))
                      	{
-                        	addToken("TOKEN_BOOLTRUE", programs[i].substring(lexPtr, lexPtr+4), line, column);
+                        	addToken("TOKEN_BOOLTRUE", programs[programIncrement].substring(lexPtr, lexPtr+4), line, column);
                         	 putMessage(" \t LEXER -->"+tokenArray[tokenArray.length-1].type + " [ "+ 
                             	tokenArray[tokenArray.length-1].value +  " ] line:" + 
                             	tokenArray[tokenArray.length-1].line + " column:" +
@@ -357,9 +357,9 @@ var programs
                     	}
 
                             // Check for IF keyword
-                    	else if(regIf.test(programs[i].substring(lexPtr, lexPtr+2)))
+                    	else if(regIf.test(programs[programIncrement].substring(lexPtr, lexPtr+2)))
                     	{
-                        	addToken("TOKEN_IF", programs[i].substring(lexPtr, lexPtr+2), line, column);
+                        	addToken("TOKEN_IF", programs[programIncrement].substring(lexPtr, lexPtr+2), line, column);
                         	 putMessage(" \t LEXER -->"+tokenArray[tokenArray.length-1].type + " [ "+ 
                             	tokenArray[tokenArray.length-1].value +  " ] line:" + 
                             	tokenArray[tokenArray.length-1].line + " column:" +
@@ -368,9 +368,9 @@ var programs
                         	column++;
                     	}
                             //Check for WHILE keyword
-                    	else if(regWhile.test(programs[i].substring(lexPtr, lexPtr+5)))
+                    	else if(regWhile.test(programs[programIncrement].substring(lexPtr, lexPtr+5)))
                     	{
-                        	addToken("TOKEN_WHILE", programs[i].substring(lexPtr, lexPtr+5), line, column);
+                        	addToken("TOKEN_WHILE", programs[programIncrement].substring(lexPtr, lexPtr+5), line, column);
                         	 putMessage(" \t LEXER -->"+tokenArray[tokenArray.length-1].type + " [ "+ 
                             	tokenArray[tokenArray.length-1].value +  " ] line:" + 
                             	tokenArray[tokenArray.length-1].line + " column:" +
@@ -379,9 +379,9 @@ var programs
                         	column+=4;
                     	}
                     		//Check for PRINT keyword
-                    	else if(regPrint.test(programs[i].substring(lexPtr, lexPtr+5)))
+                    	else if(regPrint.test(programs[programIncrement].substring(lexPtr, lexPtr+5)))
                     	{
-                        	addToken("TOKEN_PRINT", programs[i].substring(lexPtr, lexPtr+5), line, column);
+                        	addToken("TOKEN_PRINT", programs[programIncrement].substring(lexPtr, lexPtr+5), line, column);
                         	 putMessage(" \t LEXER -->"+tokenArray[tokenArray.length-1].type + " [ "+ 
                             	tokenArray[tokenArray.length-1].value +  " ] line:" + 
                             	tokenArray[tokenArray.length-1].line + " column:" +
@@ -391,9 +391,9 @@ var programs
                     	}
 
                          //Check for FALSE keyword
-                    	else if(regBooleanFalse.test(programs[i].substring(lexPtr, lexPtr+5 )))
+                    	else if(regBooleanFalse.test(programs[programIncrement].substring(lexPtr, lexPtr+5 )))
                     	{
-                        	addToken("TOKEN_BOOLFALSE", programs[i].substring(lexPtr, lexPtr+5), line, column);
+                        	addToken("TOKEN_BOOLFALSE", programs[programIncrement].substring(lexPtr, lexPtr+5), line, column);
                         	 putMessage(" \t LEXER -->"+tokenArray[tokenArray.length-1].type + " [ "+ 
                             	tokenArray[tokenArray.length-1].value +  " ] line:" + 
                             	tokenArray[tokenArray.length-1].line + " column:" +
@@ -402,7 +402,7 @@ var programs
                         	column+=4;
                     	}
                             //CHECK FOR VAR TYPE STRING
-                    	else if(regStringType.test(programs[i].substring(lexPtr, lexPtr+6)))
+                    	else if(regStringType.test(programs[programIncrement].substring(lexPtr, lexPtr+6)))
 						{
 							addToken("TOKEN_TYPESTRING", "string" , line , column)
 							 putMessage(" \t LEXER -->"+tokenArray[tokenArray.length-1].type + " [ "+ 
@@ -415,7 +415,7 @@ var programs
 
 						}
                             //CHECK FOR VAR TYPE BOOLEAN
-						else if(regBoolType.test(programs[i].substring(lexPtr, lexPtr+7)))
+						else if(regBoolType.test(programs[programIncrement].substring(lexPtr, lexPtr+7)))
 						{
 							addToken("TOKEN_TYPEBOOLEAN", "boolean" , line , column)
 							 putMessage(" \t LEXER -->"+tokenArray[tokenArray.length-1].type + " [ "+ 
@@ -427,7 +427,7 @@ var programs
 							
 						}
                             //CHECK FOR VAR TYPE INT
-						else if(regIntType.test(programs[i].substring(lexPtr, lexPtr+3)))
+						else if(regIntType.test(programs[programIncrement].substring(lexPtr, lexPtr+3)))
 						{
 							addToken("TOKEN_TYPEINT", "int" , line , column)
 							 putMessage(" \t LEXER -->"+tokenArray[tokenArray.length-1].type + " [ "+ 
@@ -440,11 +440,11 @@ var programs
 						}
 						
                         // Check for ID tokens
-                    	else if (regID.test(programs[i].charAt(lexPtr))) 
+                    	else if (regID.test(programs[programIncrement].charAt(lexPtr))) 
                     	{
                         	if(inQuotes)
                         	{
-                            	addToken("TOKEN_CHAR", programs[i].charAt(lexPtr), line, column);
+                            	addToken("TOKEN_CHAR", programs[programIncrement].charAt(lexPtr), line, column);
                             	 putMessage(" \t LEXER -->"+tokenArray[tokenArray.length-1].type + " [ "+ 
                             	tokenArray[tokenArray.length-1].value +  " ] line:" + 
                             	tokenArray[tokenArray.length-1].line + " column:" +
@@ -452,7 +452,7 @@ var programs
                         	}
                         	else
                         	{
-                            	addToken("TOKEN_ID", programs[i].charAt(lexPtr), line, column);
+                            	addToken("TOKEN_ID", programs[programIncrement].charAt(lexPtr), line, column);
                             	 putMessage(" \t LEXER -->"+tokenArray[tokenArray.length-1].type + " [ "+ 
                             	tokenArray[tokenArray.length-1].value +  " ] line:" + 
                             	tokenArray[tokenArray.length-1].line + " column:" +
@@ -460,16 +460,16 @@ var programs
                         	}
                     	}
                         	//Check for digit token
-                    	else if (regDigit.test(programs[i].charAt(lexPtr))) 
+                    	else if (regDigit.test(programs[programIncrement].charAt(lexPtr))) 
                     	{
-                        	addToken("TOKEN_DIGIT", programs[i].charAt(lexPtr), line, column);
+                        	addToken("TOKEN_DIGIT", programs[programIncrement].charAt(lexPtr), line, column);
                         	 putMessage(" \t LEXER -->"+tokenArray[tokenArray.length-1].type + " [ "+ 
                             	tokenArray[tokenArray.length-1].value +  " ] line:" + 
                             	tokenArray[tokenArray.length-1].line + " column:" +
                             	tokenArray[tokenArray.length-1].colNumber);
                     	}
 							//Check for ISEQUAL token (==)
-						else if(regIsEqual.test(programs[i].substring(lexPtr, lexPtr+2)))
+						else if(regIsEqual.test(programs[programIncrement].substring(lexPtr, lexPtr+2)))
 						{
 							addToken("TOKEN_ISEQUAL", "==", line, column);
 							lexPtr++;
@@ -479,7 +479,7 @@ var programs
                             	tokenArray[tokenArray.length-1].colNumber);
 						}
 							//Check for ISNOTEQUAL token (!=)
-						else if (regIsNotEqual.test(programs[i].substring(lexPtr, lexPtr +2)))
+						else if (regIsNotEqual.test(programs[programIncrement].substring(lexPtr, lexPtr +2)))
 						{
 							lexPtr++
 							addToken("TOKEN_NOTEQUAL", "!=" , line, column)
@@ -490,7 +490,7 @@ var programs
 						}
 
 							//Check for ASSIGN token (=)
-						else if(regAssign.test(programs[i].charAt(lexPtr)))
+						else if(regAssign.test(programs[programIncrement].charAt(lexPtr)))
 						{
 							addToken("TOKEN_ASSIGN", "=" , line , column)
 							 putMessage(" \t LEXER -->"+tokenArray[tokenArray.length-1].type + " [ "+ 
@@ -499,7 +499,7 @@ var programs
                             	tokenArray[tokenArray.length-1].colNumber);
 						}
                             //CHECK FOR + TOKEN
-						else if(regIntOp.test(programs[i].charAt(lexPtr)))
+						else if(regIntOp.test(programs[programIncrement].charAt(lexPtr)))
 						{
 							addToken("TOKEN_INTOP", "+" , line , column)
 							 putMessage(" \t LEXER -->"+tokenArray[tokenArray.length-1].type + " [ "+ 
@@ -508,11 +508,11 @@ var programs
                             	tokenArray[tokenArray.length-1].colNumber);
 						}
 						//THIS IS HERE SO SPACES DONT MESS WITH ANYTHING
-                        else if(regWhiteSpace.test(programs[i].charAt(lexPtr)))
+                        else if(regWhiteSpace.test(programs[programIncrement].charAt(lexPtr)))
                         {
                         }
 
-						else if(regEOF.test(programs[i].charAt(lexPtr)))
+						else if(regEOF.test(programs[programIncrement].charAt(lexPtr)))
                         {
                            addToken("TOKEN_EOF", "$" , line , column)
                            putMessage(" \t LEXER -->"+tokenArray[tokenArray.length-1].type + " [ "+ 
@@ -522,7 +522,7 @@ var programs
                            putMessage("Finished lexing program #" + programCount + " Warnings:" +warningCount + " Errors:" +errors);
                            programCount++;
 
-                           if(lexPtr < programs[i].length-1) //i know this can turn into one line but everything is working and im not risking ANYTHING
+                           if(lexPtr < programs[programIncrement].length-1) //i know this can turn into one line but everything is working and im not risking ANYTHING
                            {
                            	putMessage("\n  \n LEXING PROGRAM #" + programCount);
                            }
@@ -530,7 +530,7 @@ var programs
 
 
                             //NEWLINE TEST. 
-                        else if (regNewLine.test(programs[i].charAt(lexPtr))) 
+                        else if (regNewLine.test(programs[programIncrement].charAt(lexPtr))) 
                         {
                             line++
                             column = -1;
@@ -544,7 +544,7 @@ var programs
                             {
                    		       errorInCurrentProgram = true;
                    	        }
-                            putMessage(" \t ERROR: Unexpected token '" + programs[i].charAt(lexPtr) + "' at line:" + line + " , column:" + column);
+                            putMessage(" \t ERROR: Unexpected token '" + programs[programIncrement].charAt(lexPtr) + "' at line:" + line + " , column:" + column);
 
                         }
           
@@ -595,7 +595,7 @@ var programs
 				//console.log(tokenArray);
 				//tokenArray = [];
 				
-				putMessage("Finished lexing program #" +i + " Warnings:" +warningCount + " Errors:" +errors);
+				putMessage("Finished lexing program #" +programIncrement + " Warnings:" +warningCount + " Errors:" +errors);
                 warningCount = 0;
 				parseErrors = errors;
                 errors = 0;
