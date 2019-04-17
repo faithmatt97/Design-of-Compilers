@@ -27,6 +27,18 @@ var sErrors=0;
 var sWarnings = 0;
 var ast;
 var scopelvl = -1;
+
+function update(boolArray){
+	//console.log(boolArray.length + "MIGHTY BEE")
+	for(i=0 ; i< boolArray.length; i++){
+		//console.log("CRIKEY")
+		if(boolArray[i].type ==="TOKEN_ID"){
+			//console.log("This is a test -------")
+			setVarToUsed(boolArray[i].name, symbolTree.current)
+		}
+	}
+
+}
 function printSymbolTable(treeLevel){
 	console.log("ID\tType\t ScopeLevel\t")
 	for(var i = 0; i<callingAllSymbols.length; i++){
@@ -82,9 +94,9 @@ function varSearchParentScope(id, level){
 function varSearchCurrentScope(id){
 	if(symbolTree.current.symbols.length >0){ 
 	for(i = 0; i<symbolTree.current.symbols.length; i++){
-		if(sCurrentToken.value === symbolTree.current.symbols[i].id){
+		if(id === symbolTree.current.symbols[i].id){
 			
-			return true;
+			return true; 
 		}
 	}
 }
@@ -156,7 +168,7 @@ function sProgram(tokens){
 	//secondBool = undefined
 	symbolTree = new SymbolTree();
 	sTokens = tokens;
-	boolArray = []
+	//-boolArray = []
 	sToken = tokens;
 	//console.log(sTokens)
 
@@ -187,27 +199,30 @@ function sBlock(){
 	if(sErrors>0){
 				return
 			}
-	if(scopelvl != -1){
-	if(test != undefined && secondBool != undefined){
-	//console.log("COTTON CANDY "+test.type +" " + secondBool.type)
-	
-	checkBool(boolArray, test, secondBool)
-	boolArray=[]
-}
-}
+	//if(scopelvl != -1){
+	//if(boolArray >2){
+//	console.log("COTTON CANDY "+test.type +" " + secondBool.type)
+	//console.log("^^^^^^^")
+	//console.log(boolArray)
+	//update(boolArray)
+	//checkBool(boolArray, test, secondBool)
+	//boolArray=[]
+//}
+//}
 	//console.log("SEMANTIC ANALYSIS --> Analyzing Block")
 	symbolTree.current.map = new Map(symbolMap);
 	symbolMap = new Map();
 
 
-	scopeCount++;
-    scopelvl++;
+	
 	symbolTree.addNode("Scope Level:" + scopelvl, "branch");
 	
 	ast.addNode("Block" , "branch");
 	//console.log(sTokens[1])
 
 	if (sCurrentToken.type === "TOKEN_LEFTBRACE") {
+		scopeCount++;
+    scopelvl++;
         sGetToken();
        // console.log(sCurrentToken)
         
@@ -305,7 +320,7 @@ function sPrint(){
 				console.log("ERROR: variable [" +sCurrentToken.value+ "] used before declared.")
 			}
 
-			else if(getValueofID(sCurrentToken.value, symbolTree.current) !=-1){
+			else {
 				console.log("NARUTOOOO")
 				setVarToUsed(sCurrentToken.value, symbolTree.current)}
 
@@ -322,9 +337,11 @@ function sPrint(){
 		}*/
 		if(sCurrentToken.type === "TOKEN_RIGHTPAREN")
 			sGetToken();
-
+//console.log("#######")
+//console.log(boolArray)
+//update(boolArray)
 checkBool(boolArray, test, secondBool)
-boolArray=[]
+//boolArray=[]
 		ast.endChildren();
 }
 
@@ -441,17 +458,20 @@ function sAssignmentStatement(){
 			
 			
 				//checkBool(boolArray, test, secondBool)
-				
-			
+					
+	if(boolArray.length>2){
+		console.log("***********")
+		console.log(boolArray)
+		update(boolArray)
+		checkBool(boolArray, test, secondBool)
+		
+	}
+			boolArray = []
 		}
 		//console.log("COTTON CANDY "+test +" " + secondBool)
 			//
 		//	boolArray =[]
-		
-	if(boolArray.length>=2){
-		checkBool(boolArray, test, secondBool)
-		boolArray = []
-	}
+
 		ast.endChildren();
 
 
@@ -459,7 +479,7 @@ function sAssignmentStatement(){
 
 
 function sVarDecl(){
-	//console.log("SEMANTIC ANALYSIS --> Analyzing VarDecl")
+		console.log("SEMANTIC ANALYSIS --> Analyzing VarDecl")
 		varFound= false;
 		ast.addNode("VarDecl", "branch");
 		varType = sCurrentToken.type;
@@ -472,14 +492,13 @@ function sVarDecl(){
 				
 
 				variable = varSearchCurrentScope(sCurrentToken.value)
-
+					//console.log(varSearchCurrentScope(sCurrentToken.value) + " WHAT IS IT BITCH FOR :" +sCurrentToken.value)
 				if(variable){
 					sErrors++;
-					console.log("ERROR: variable already declared")
+					console.log("ERROR: variable ["+sCurrentToken.value+"] already declared on line: " +sCurrentToken.line)
 					return;
 				}
-				if(sErrors>0){
-				return
+				
 			}
 
 				if(!variable)
@@ -490,7 +509,8 @@ function sVarDecl(){
 						sID();
 					}
 
-			
+			if(sErrors>0){
+				return
 		}
 		//sID();
 
@@ -501,11 +521,12 @@ function sVarDecl(){
 
 function sWhileStatement(){
 	//console.log("SEMANTIC ANALYSIS --> Analyzing While Statement")
-	boolArray = []
+	//-boolArray = []
 	ast.addNode("WhileStatement", "branch");
 	sGetToken();
 	if(sCurrentToken.type === "TOKEN_LEFTPAREN" || sCurrentToken.type === "TOKEN_BOOLFALSE" || sCurrentToken.type ==="TOKEN_BOOLTRUE"){
 		sBooleanExpr();
+		checkBool(boolArray, test, secondBool)
 		sGetToken();
 		sBlock();
 	}
@@ -518,7 +539,7 @@ function sIfStatement (){
 	//console.log("SEMANTIC ANALYSIS --> Analyzing If Statement")
 //console.log("COTTON CANDY "+test +" " + secondBool)
 //checkBool(boolArray, test, secondBool)
-	boolArray = []
+	//boolArray = []
 	ast.addNode("If Statement", "branch");
 	symbolTree.addNode("Scope Level: " + (scopelvl+1), "branch")
 	
@@ -526,7 +547,8 @@ function sIfStatement (){
 	sGetToken();
 	if(sCurrentToken.type === "TOKEN_LEFTPAREN" || sCurrentToken.type === "TOKEN_BOOLFALSE" || sCurrentToken.type ==="TOKEN_BOOLTRUE"){
 
-		sBooleanExpr();
+		sBooleanExpr()
+		checkBool(boolArray, test, secondBool)
 		sGetToken();
 		sBlock();
 		
@@ -726,85 +748,6 @@ function sBooleanExpr(){
 				//boolArray.push(sCurrentToken)
 			}
 
-			/*if(sCurrentToken.type === "TOKEN_ID")
-			{
-				console.log("In Boolean expr and 2nd expr is ID")
-				second = getValueofID(sCurrentToken.value, symbolTree.current)
-				
-				if(second == -1)
-				{
-
-					console.log("ERROR: variable [" +sCurrentToken.value+ "] used before declared." )
-				}
-				 //if(second.type != first){
-					//console.log("ERROR: Mixmatched types in boolean expr")
-				//}
-		    }
-
-		    
-
-		   
-		    else{
-		    	for(i=0; i<sTokens.length; i++){
-		    		if(sTokens[i].type != "TOKEN_LEFTPAREN" && sTokens[i].type!="TOKEN_RIGHTPAREN"){
-		    			second=sTokens[i].type
-		    			console.log("AND THE VERDICT IS "+second)
-		    			break;
-		    		}
-		    	}
-		    	
-		    }
-
-
-		    if(typeof first === "object" && typeof second === "object"){
-		    		if(first.type != second.type)
-		    			console.log("Two ids do not match types")
-		    }
-
-		    else if(typeof first ==="object" && typeof second != "object"){
-		    	if(second === "TOKEN_LEFTPAREN" || second  === "TOKEN_BOOLFALSE" || second  ==="TOKEN_BOOLTRUE"){
-				if(first.type != "TOKEN_TYPEBOOLEAN")
-					console.log("Mixmatched types.  ["+ first.id + "] is type [" + first.type+ "] is being compared to  type [" + second+ "]")
-			}
-
-			else if(second === "TOKEN_DIGIT"){
-				if(first.type != "TOKEN_TYPEINT")
-					console.log("Mixmatched types.  ["+ first.id + "] is type [" + first.type+ "] is being compared to  type [" + second+ "]")
-			}
-
-			else if(second === "TOKEN_QUOTE"){
-				if(first.type != "TOKEN_TYPESTRING")
-					console.log("Mixmatched types.  ["+ first.id + "] is type [" + first.type+ "] is being compared to  type [" + second+ "]")
-			}
-
-		    }
-
-		    else if(typeof first !="object" && typeof second === "object"){
-		    	if(first === "TOKEN_LEFTPAREN" || first  === "TOKEN_BOOLFALSE" || first  ==="TOKEN_BOOLTRUE"){
-				if(second.type != "TOKEN_TYPEBOOLEAN")
-					console.log("Mixmatched types.  ["+ second.id + "] is type [" + second.type+ "] is being compared to  type [" + first+ "]")
-			}
-
-			else if(first === "TOKEN_DIGIT"){
-				if(second.type != "TOKEN_TYPEINT")
-					console.log("Mixmatched types.  ["+ second.id + "] is type [" + second.type+ "] is being compared to  type [" + first+ "]")
-			}
-
-			else if(first === "TOKEN_QUOTE"){
-				if(second.type != "TOKEN_TYPESTRING")
-					console.log("Mixmatched types.  ["+ second.id + "] is type [" + second.type+ "] is being compared to  type [" + first+ "]")
-			}
-
-		    }
-		    else if(typeof first != "object" && typeof second != "object"){
-		    		//if((first === "TOKEN_BOOLTRUE" && second === "TOKEN_BOOLFALSE" )|| (first === "TOKEN_BOOLFALSE" && second ==="TOKEN_BOOLTRUEL")){}
-
-		    		 if(first !=second){
-		    		 	if((first === "TOKEN_BOOLTRUE" && second === "TOKEN_BOOLFALSE" )|| (first === "TOKEN_BOOLFALSE" && second ==="TOKEN_BOOLTRUEL")){console.log("comparing bool types")}
-		    			else 
-		    				console.log("ERROR: comparing " + first +"to " + second + " on line: " + sCurrentToken.line)
-		    		}
-		    }*/
 			sExpr();
 			
 		}    
@@ -842,7 +785,28 @@ trackedtype = first
 
 		if(closeOut)
 			ast.endChildren();
+ for(var i = 0; i< ast.current.children.length; i++){ 
+             	//console.log(ast.current.children[i].children[0])
+             	//boolArray.push(ast.current.children[i].children[1])
+             	pls = ast.current.children[i].children[0]
+             	
+             	if(ast.current.children[i].name != "isEqual" && ast.current.children[i].name != "notEqual"){
+             		
+             		
+             		boolArray.push(ast.current.children[i])
+             		setVarToUsed(ast.current.children[i].name, symbolTree.current)
 
+             }
+
+             else {
+             	for( j = 0; j<ast.current.children[i].children.length; j++)
+             		if(ast.current.children[i].children[j].name!= "isEqual" && (ast.current.children[i].children[j].name!= "notEqual")){
+             	boolArrayYolo.push(ast.current.children[i].children[j])
+             setVarToUsed(ast.current.children[i].children[j].name, symbolTree.current)}
+
+             }
+
+             }
  // if(ast.current.children.length >=2){
         	
         	//console.log("The tracked type is "+ trackedtype)
@@ -868,64 +832,13 @@ trackedtype = first
         		console.log(ast.current.children.length)*/
 
         		//console.log(first.type + "RAJEET")
-             for(var i = 1; i< ast.current.children.length; i++){ 
-             	//console.log(ast.current.children[i].children[0])
-             	//boolArray.push(ast.current.children[i].children[1])
-             	pls = ast.current.children[i].children[0]
-             	//console.log(pls)
-             	//Object.defineProperty(pls, "unique",{
-             			//value: pls.line + " " + pls.column
-             	//});
-             	//boolArray.push(ast.current.children[i].children[0])
-             	if(ast.current.children[i].name != "isEqual" && ast.current.children[i].name != "notEqual"){
-             		//console.log(ast.current.children[i])
-             		
-             		//else
-             			//console.log(ast.current.children[i])
-             		
-             		boolArray.push(ast.current.children[i])
-             		setVarToUsed(ast.current.children[i].name, symbolTree.current)
-/*go = getValueofID(ast.current.children[i].name, symbolTree.current)
-console.log(go.type + "IKEEEEE " + go.id)
-             		if(first.type ==="TOKEN_TYPEBOOLEAN" || first.type ==="TOKEN_BOOLTRUE" || first.type ==="TOKEN_BOOLFALSE"){
-             			//console.log("Marching to zion " + ast.current.children[i].name)
-             			
-             			
-             			console.log("CHECKING: " + ast.current.children[i].type + " " + ast.current.children[i].name)
-             			if((go.type != "TOKEN_TYPEBOOLEAN") && (go.type != "TOKEN_BOOLFALSE") && (go.type != "TOKEN_BOOLTRUE"))
-             			{
-
-             				console.log("ERROR: " + ast.current.children[i].type + " " + ast.current.children[i].name)
-             			}
-             		}
-
-
-
-*/
-             }
-
-             else {
-             	for( j = 0; j<ast.current.children[i].children.length; j++)
-             		if(ast.current.children[i].children[j].name!= "isEqual" && (ast.current.children[i].children[j].name!= "notEqual")){
-             	boolArrayYolo.push(ast.current.children[i].children[j])
-             setVarToUsed(ast.current.children[i].children[j].name, symbolTree.current)}
-
-             }
-
-
-          
-                 
-
-
-             }
-
-
+           
 
         }
         
 // end if ast.>2}
 
-function checkBool(boolArray, firstBool, last){  //first last are last things in boolexpr
+function checkBool(boolArrayNonGlobal, firstBool, last){  //first last are last things in boolexpr
     //removeDuplicates(boolArray, line, column)
     //console.log(boolArray)
     //console.log("^^^^^^^^^^^")
@@ -933,8 +846,9 @@ function checkBool(boolArray, firstBool, last){  //first last are last things in
     //console.log(last)
    //console.log(getUnique(boolArray,'column'))
 
-  // console.log(boolArray)
-	boolArrayFinal = getUnique(boolArray,'unique').reverse()//boolArray.reverse().slice(0);
+ // console.log("((((((((((")
+  //console.log(firstBool)
+	boolArrayFinal = getUnique(boolArrayNonGlobal,'unique').reverse()//boolArray.reverse().slice(0);
 	var tracking2
 	 var firstCheck
 	 var lastCheck
@@ -1035,6 +949,10 @@ if(last === undefined){
     	}
     }
 }
+
+//console.log("++++++++++++")
+//console.log(firstCheck)
+//console.log(lastCheck)
     if(sErrors>0){
 				return
 			}
@@ -1051,17 +969,19 @@ if(last === undefined){
 				compare2 = getValueofID(boolArrayFinal[i].name, symbolTree.current).type
 				
 					setVarToUsed(boolArrayFinal[i].name,symbolTree.current)
-				console.log("$$ Comparing tracked type to type: " +compare2 + " " + boolArrayFinal[i].name)
+				//console.log("$$ Comparing tracked type to type: " +compare2 + " " + boolArrayFinal[i].name)
 		    }
 
 			 else if(  boolArrayFinal[i].type != "TOKEN_ID")
 		     {
 				compare2 = boolArrayFinal[i].type
-				console.log("$$ Comparing tracked type to type: " +compare2 + " " + boolArrayFinal[i].name)
+				//console.log("$$ Comparing tracked type to type: " +compare2 + " " + boolArrayFinal[i].name)
 		    }
 
 		    if(firstCheck.type === "TOKEN_DIGIT" || firstCheck.type === "TOKEN_TYPEINT")
 		    {
+
+		    	//console.log("@@ Testing against type: " + firstCheck.type)
     			
     			if( compare2 != undefined && compare2 != "TOKEN_TYPEBOOLEAN" && compare2 != "TOKEN_BOOLTRUE" && compare2!= "TOKEN_BOOLFALSE" && compare2 != "TOKEN_DIGIT" && compare2 != "TOKEN_TYPEINT" ){
     				sErrors++
