@@ -1,0 +1,110 @@
+<!DOCTYPE HTML>
+
+<!-- 
+		Will move button functions later i guess
+		gotta work on hacking and penetration for now
+		peace out project one
+-->
+<html>
+<head>
+    <title>My Compiler</title>
+    <img src = "https://66.media.tumblr.com/2f7d663b71e7c4df7e7e63fd5c2f551f/tumblr_inline_oyionunr9Z1sib3y3_500.png"/>
+    <h2>^^Me trusting my project (and degree) to future me</h2>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+    <link rel="stylesheet" type="text/css" href="compiler.css" />
+</head>
+<body onload="init()" >
+    <h1>Faith's Compiler Project</h1>
+    <p>
+        . . . <em>My name's faith matthew and im gonna hate this semester</em>:
+       <p> Note: After fixing very specific bugs, I kept creating more. My code is clever but dumb bc it can pass the hardest boolean tests, but cant pick up on duplicate var decl after an if statement block.  </p>
+       <p>SEMANTIC ANALYSIS IS IN CONSOLE!</p>
+    </p>
+    <pre>
+    </pre>
+    <div>
+        <img  style="float:right;" src="images/CompilerPhases.png" alt="Compiler Phases diagram" />
+    </div>  
+    <button onclick = "longTest()">Long Test </button>  
+      <button onclick = "longTestSpace()"> Long Test w/o Spaces </button>  
+      <button onclick = "Test2()">  Invalid Token</button>
+      <button onclick = "unclosedComment()"> Unclosed Comment </button>
+      <button onclick = "unclosedString()"> Unclosed String </button>
+      <button onclick = "noEOF()"> No EOF Token </button>
+      <button onclick = "invalidString()"> Invalid String </button>
+   
+    <div>
+
+        <textarea id="taSourceCode" cols="32" rows="18"></textarea>
+        <br>
+        <input type="button" id="btnCompile" value="Compile" onclick="btnCompile_click();"/>
+        <br>
+        <textarea id="taOutput" cols="128" rows="36"></textarea>
+    </div>
+    <!-- Footer -->
+    <p>
+        <a href="http://validator.w3.org/check?uri=referer">
+            <img src="images/w3cvalidhtml5.jpg" alt="Valid HTML5" width="88" height="31" />
+        </a>
+    </p>
+    <!-- Client-side code down here, per the YSlow advice. 
+    // (http://developer.yahoo.com/performance/rules.html#js_bottom) -->
+     <script type="text/javascript" src="scripts/Tree.js"></script> 
+     <script type="text/javascript" src="scripts/Semantics.js"></script> 
+     <script type="text/javascript" src="scripts/parse.js"></script>
+    <script type="text/javascript" src="scripts/utils.js"></script> 
+     <script type="text/javascript" src="scripts/CodeGeneration.js"></script> 
+   
+    <script type="text/javascript" src="scripts/lexer.js"></script> 
+     <script type="text/javascript" src="scripts/Token.js"></script> 
+     <script type="text/javascript" src="scripts/Symbol.js"></script> 
+     <script type="text/javascript" src="scripts/SymbolTree.js"></script> 
+   
+    
+      <script>
+        
+        function longTest(){
+document.getElementById("taSourceCode").value =""
+            
+            document.getElementById("taSourceCode").value = '/*Long Test Case - Everything Except Boolean Declaration */\n{\n  /* Int Declaration */\n  int a\n  int b\n  a = 0\n  b=0\n  /* While Loop */\n  while (a != 3) {\n    print(a)\n    while (b != 3) {\n      print(b)\n      b = 1 + b\n      if (b == 2) {\n        /* Print Statement */\n        print(\"there is no spoon\" /* This will do nothing */ )\n      }\n    }\n    b = 0\n    a = 1+a\n   }\n}\n$'
+        }
+
+        function Test2(){
+
+              document.getElementById("taSourceCode").value = '/*  Provided By \n- Compiler Tyrant\n- Alan G Labouseur\n*/\n{}$\u0009\n{{{{{{}}}}}}$\u0009\n{{{{{{}}}}}}}$\u0009\n{int\u0009@}$'
+
+
+        }
+
+        function unclosedComment(){
+        	document.getElementById("taSourceCode").value ='/* AHHHHHHHHHH*/\r\n\r\nstring b\r\n\r\n/* I love finding new bugs YAY';
+        }
+
+        function unclosedString(){
+        	document.getElementById("taSourceCode").value ='print("i will walk backwards into oblivion while facing god)';
+        }
+
+        function noEOF(){
+
+        	document.getElementById("taSourceCode").value = '{"hi"}';
+        	
+        }
+
+        function longTestSpace(){
+        	document.getElementById("taSourceCode").value = '/*LongTestCase-EverythingExceptBooleanDeclaration*/{/*IntDeclaration*/\r\nintaintba=0b=0/*WhileLoop*/while(a!=3){print(a)while(b!=3){print(b)b=1+bif(b==2)\r\n{/*PrintStatement*/print(\"there is no spoon\"/*Thiswilldonothing*/)}}b=0a=1+a}}$';
+        }
+
+        function invalidString(){
+
+        	document.getElementById("taSourceCode").value = 'string b = \"in dangan ronpa there is a robot named K1-B0\"\r\n\r\nprint(\"the grammar doesnt like his name so we gotta call him keebo\")$';
+        }
+      </script>
+
+         
+    
+
+    
+    
+    <script type="text/javascript" src="utils.js"></script>
+</body>
+</html>

@@ -189,7 +189,9 @@ function sProgram(tokens){
 	console.log(ast.toString())
 	
 	console.log("-----------Scope Table----------")
-printSymbolTable()
+    printSymbolTable()
+
+    return ast;
 }
 	}
 	

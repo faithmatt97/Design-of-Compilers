@@ -602,7 +602,8 @@ var programs
 				
                
 				parseProgram();
-                sProgram(copy)
+                var ast_after = sProgram(copy)
+                generate(ast_after)
 
 
 
