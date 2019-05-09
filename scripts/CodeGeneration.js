@@ -11,11 +11,14 @@ in order to keep track of ids and their temp storage vals we use hashmap. to sea
 
 
 var machineCode;
-
+var codeGenScope
+var tempFound
 function generate(tree){
-	machineCode = [];	
+	machineCode = [];
+	tempFound = false;	
 	tempStorageCounter =0;
-	tempStorageMap = new Map();
+	tempStorageMap = []
+	codeGenScope = -1;
 	console.log("CODE GEN INITIATING");
 	console.log(tree);
     	
@@ -64,33 +67,71 @@ function codeGenProgram(node, level){
 }
 
 function codeGenBlock(node, level){
+	codeGenScope++;
 	for (var i = 0; i < node.children.length; i++) {
         //moves deeper on each one		
         traverseAST(node.children[i], level++);
 	}
+	codeGenScope--;
 }
 
 
 function codeGenVarDecl(node, level){
 	console.log("JESUS")
-     console.log(node[0].name);
+     console.log(node[0]);
+     console.log(node[0].parent.children)
      addCode("A9")
      addCode("00")
      tempValue = "T"+tempStorageCounter
      addCode(tempValue);
      tempStorageCounter++;
      addCode("XX")
-     tempStorageMap.set(node[0].name, tempValue);
+     tempStorageMap.push(new Temp (tempValue, node[1].name, node[0].name, codeGenScope));
 }
 
 function codeGenAssign(node, level){
 
 	addCode("A9");
 	addCode("0" + node[1].name)
+	for(i=0; i< tempStorageMap.length;i++){
+		if(codeGenScope == tempStorageMap[i].getScope() && node[0].name === tempStorageMap[i].getID()){
+			console.log("MATCH")
+			addCode(tempStorageMap[i].getTempID());
+			break;
+		}
+	}
+
+	addCode("XX")
+
+}
+
+
+function codeGenPrint(node, level){
+   addCode("AC");
+   console.log("PERIA IS OUT (PRINT)")
+ //console.log(node.children[0])
+ if(node[0].children.length>0)
+ 	console.log("KILL THE BABIES")
+findTempLocation(node[0].name, node)
+addCode("XX")
+addCode("A2")
+addCode("01")
+addCode("FF")
 
 
 }
 function addCode(val){
-	console.log("we're here")
 	machineCode.push(val)
+}
+
+function findTempLocation(id, node){
+	tempFound = false;
+	for(i = 0; i<tempStorageMap.length; i++){
+		if(codeGenScope == tempStorageMap[i].getScope() && node[0].name === tempStorageMap[i].getID()){
+			console.log("MATCH")
+			addCode(tempStorageMap[i].getTempID());
+			tempFound = true;
+			break;
+		}
+	}
 }

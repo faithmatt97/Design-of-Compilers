@@ -485,6 +485,7 @@ function sVarDecl(){
 		varFound= false;
 		ast.addNode("VarDecl", "branch");
 		varType = sCurrentToken.type;
+		ast.addNode(sCurrentToken.type, "leaf")
 		sGetToken();
 		variable = false;
 		
