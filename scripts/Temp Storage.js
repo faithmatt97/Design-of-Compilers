@@ -23,3 +23,20 @@ constructor(tempID, id, type, scope){
 		return this.scope;
 	}
 }
+
+
+class StringEntry{
+	constructor(string, address){
+		this.string = string
+		this.address = address
+	}
+
+
+	getAddress(){
+		return this.address;
+	}
+
+	getString(){
+		return this.string;
+	}
+}
