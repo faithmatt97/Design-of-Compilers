@@ -26,6 +26,7 @@ function generate(tree){
     addToHeap("false");
 	addToHeap("true");	
 	traverseAST(tree.root, 0);
+	addZeros();
 
 	
 	
@@ -55,7 +56,7 @@ function traverseAST(node, level){
 
 	else if(node.name === "Print"){
 		console.log("HIT PRINT");
-		codeGenPrint(node.children, level)
+		codeGenPrint(node, level)
 		
 	}
 }
@@ -97,6 +98,7 @@ function codeGenVarDecl(node, level){
 	     tempStorageCounter++;
 	     //addCode("XX")  //Delete later mayhaps
 	     tempStorageMap.push(new Temp (tempValue, node[1].name, node[0].name, codeGenScope));
+	     addCode("00")
    }
 
    else if(node[0].name ==="TOKEN_TYPEBOOLEAN"){
@@ -149,6 +151,7 @@ function codeGenAssign(node, level){
 				addCode(getHeapAddress(node[1].name));   //fetch and add address of T or F 
 				addCode("8D");
 				addCode(tempStorageMap[i].getTempID());   //add temp storage
+				addCode("00")
 
 			}
 
@@ -172,16 +175,63 @@ function codeGenAssign(node, level){
 
 
 function codeGenPrint(node, level){
-   addCode("AC");
+if(machineCode.length<1){
+	addCode("A9");
+	addCode("00")
+}
+   //addCode("AC");
    console.log("PERIA IS OUT (PRINT)")
  //console.log(node.children[0])
- if(node[0].children.length>0)
- 	console.log("KILL THE BABIES")
-findTempLocation(node[0].name, node)
-addCode("XX")
-addCode("A2")
-addCode("01")
-addCode("FF")
+ console.log(node.children[0])
+ tempNode = node.children[0].children[0]
+ console.log(tempNode)
+ //console.log(node.children.length)
+ 
+ 	if(tempNode ==="TOKEN_DIGIT"){
+ 		console.log("DIGIT")
+ 	}
+
+ 	else if(node.children[0].type === "TOKEN_ID"){
+ 		console.log("ID");
+ 		
+ 		addCode("AC");
+ 		findTempLocation(node.children[0], node.children)
+ 		addCode("00")
+ 		addCode("A2")
+
+ 		addCode("01")
+ 		addCode("FF")
+ 	}
+
+ 	else if(tempNode === "TOKEN_BOOLTRUE"){
+
+ 	}
+
+ 	else if(node.children[0].type === "string"){
+ 		console.log("Generating code for string");
+ 		addToHeap(node.children[0].name);
+ 		
+ 		addCode("A0");
+ 		addCode(getHeapAddress(node.children[0].name).toUpperCase());
+ 		addCode("A2")
+ 		addCode("02");  
+ 		addCode("FF");  //System call : Print
+
+
+ 		 
+ 	}
+
+ //if(node[0].children.length>0)
+ 	//console.log("KILL THE BABIES")
+ //findTempLocation(node[0].name, node)
+/* addCode("XX")
+ addCode("A2")
+ addCode("01")
+ addCode("FF")*/
+
+ if(node.length>1){
+ 	console.log("REEL EM IN")
+ }
 
 
 }
@@ -191,24 +241,33 @@ function addCode(val){
 
 function findTempLocation(id, node){
 	tempFound = false;
+	
 	for(i = 0; i<tempStorageMap.length; i++){
 		if(codeGenScope == tempStorageMap[i].getScope() && node[0].name === tempStorageMap[i].getID()){
 			console.log("MATCH")
 			addCode(tempStorageMap[i].getTempID());
 			tempFound = true;
+
 			break;
 		}
 	}
+
+	if(!tempFound){
+		for(i=0; i< stringTable.length;i++){
+
+		}
+	}
+	
 }
 
 function addToHeap(val){
     //str= val.split("").reverse().join("");
-
+ heap.unshift("00")
     ascii_to_hexa(val)
 /*    for(i=0; i<str.length; i++){
     	heap.push(str.charCodeAt(i)).toString(16);
     }*/
-    heap.push("00")
+   
     console.log(heap)
 }
 
@@ -220,7 +279,7 @@ function ascii_to_hexa(str)
 	for (var n = 0, l = str.length; n < l; n ++) 
      {
 		var hex = Number(str.charCodeAt(n)).toString(16);
-		heap.push(hex);
+		heap.unshift(hex);
 	 }
 	 console.log(heap.join(''))
 	return heap.join('');
@@ -228,15 +287,75 @@ function ascii_to_hexa(str)
 
 
 function getHeapAddress(val){
+	tempString = [];
+	z=0;
+	place = 0;
+	counter = 0;
 	if(val ==="false"){
-		return "F5";
+		return "FA";
 	}
 
 	else if(val === "true"){
-		return "5B";
+		return "F5";
 	}
 
-	else{
+	else {
+		for ( z = 0 ; z < val.length; z++) 
+     	{
+			var check = Number(val.charCodeAt(z)).toString(16);
+			tempString.push(check);
+	 	}
+	 
+	 	for (z=0;  z < heap.length; z++){
+	 		if (counter == heap.length){
+	 			console.log("HEWWO")
+	 			console.log(z)
+	 			place = z;
+	 			break;
+	 		}
+
+	 		else if(counter==0 && (tempString[z] === heap[z])){
+	 			console.log("FUCK")
+	 			counter++;
+	 		}
+	 		else if(tempString[z] === heap[z]){
+	 			console.log("pls god")
+	 			counter++;
+	 		}
+
+	 		else{
+	 			counter = 0;
+	 		}
+	 	}
+	 	return	(256-heap.length).toString(16);
+	 	
 
 	}
+}
+
+
+function addZeros(){
+	max=256-(machineCode.length+heap.length)
+	console.log(256-(machineCode.length+heap.length))
+	for(i=0; i< max; i++){
+		machineCode.push("00");
+
+
+	}
+
+	machineCode = machineCode.concat(heap);
+
+
+}
+
+function printCode(){
+	j=0
+	str = ""
+	for(i=0; i< 256; i++){
+		//if(j==8)
+			//putMessage("\n")
+		str = str+ machineCode[i] + " "
+		j++;
+	}
+	putMessage(str)
 }
