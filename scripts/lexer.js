@@ -603,6 +603,7 @@ var programs
                
 				parseProgram();
                 var ast_after = sProgram(copy)
+               // console.log("GUDK " + sErrors)
                 generate(ast_after)
 
 
